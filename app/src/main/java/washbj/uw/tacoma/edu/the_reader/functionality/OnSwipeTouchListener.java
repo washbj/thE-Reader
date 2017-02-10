@@ -1,4 +1,4 @@
-package washbj.uw.tacoma.edu.the_reader; /**
+package washbj.uw.tacoma.edu.the_reader.functionality; /**
  * Created by Justin of America on 2/2/2017.
  * UTilizes code from Edward Brey on StackOverflow
  */

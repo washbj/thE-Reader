@@ -1,8 +1,9 @@
-package washbj.uw.tacoma.edu.the_reader;
+package washbj.uw.tacoma.edu.the_reader.functionality;
 
 import android.Manifest;
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
@@ -13,11 +14,13 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import java.net.URI;
+import washbj.uw.tacoma.edu.the_reader.R;
+import washbj.uw.tacoma.edu.the_reader.authentication.LoginActivity;
 
 public class ReadActivity extends AppCompatActivity
         implements PageFragment.OnFragmentInteractionListener {
     private static int FILE_PICKED_RESULT = 13126;
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
     PageFragment mPageFragment;
 
     @Override
@@ -69,7 +72,18 @@ public class ReadActivity extends AppCompatActivity
             Intent fileIntent = new Intent(Intent.ACTION_GET_CONTENT);
             fileIntent.setType("file/*.txt");
             startActivityForResult(fileIntent, FILE_PICKED_RESULT);
+            return true;
 
+        } else if (iD == R.id.action_logout) {
+            SharedPreferences sharedPreferences =
+                    getSharedPreferences(getString(R.string.LOGIN_PREFS), Context.MODE_PRIVATE);
+            sharedPreferences.edit().putBoolean(getString(R.string.LOGGEDIN), false)
+                    .commit();
+
+            Intent i = new Intent(this, LoginActivity.class);
+            startActivity(i);
+            finish();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -91,10 +105,6 @@ public class ReadActivity extends AppCompatActivity
         }
 
     }
-
-    // Storage Permissions
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-
 
     private void checkPermissions() {
         String[] saPermissions = { Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE };

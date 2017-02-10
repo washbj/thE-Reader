@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="washbj.uw.tacoma.edu.the_reader.PageFragment"
+    tools:context="washbj.uw.tacoma.edu.the_reader.functionality.PageFragment"
     android:id="@+id/frame">
 
     <!-- TODO: Update blank fragment layout -->
