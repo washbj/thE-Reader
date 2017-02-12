@@ -1,8 +1,11 @@
 package washbj.uw.tacoma.edu.the_reader.functionality;
-
+/**
+ * @Author Michael Scott, Justin Washburn on 2/11/2017.
+ */
 import android.content.Context;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
@@ -13,11 +16,19 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import washbj.uw.tacoma.edu.the_reader.R;
@@ -26,9 +37,15 @@ import washbj.uw.tacoma.edu.the_reader.R;
  * A Fragment for breaking input text up into "pages",
  * such that each "page" can be displayed fully within
  * the confines of a single screen. Pages may be flipped
- * forwards and backwards as well.
+ * forwards and backwards as well. Also manages the storing
+ * of relevant book data in the SQL server.
  */
 public class PageFragment extends Fragment {
+
+    /**
+     * The url of the book add php code
+     */
+    private static final String ADD_BOOK_URL ="http://cssgate.insttech.washington.edu/~_450bteam5/addBook.php?";
     /** Hard-coded variable for the screen width to use when calculating how much text will fit. */
     private static final int SCREEN_WIDTH = 200;
 
@@ -129,10 +146,11 @@ public class PageFragment extends Fragment {
     /**
      * Reads in text from some input file, converting it to pages and pushing them to the ArrayList.
      *
-     * @param theFileUri The URI passed in from ReadActivity, pointing to the .txt file to read from.
+     * @param filePath The String passed in from ReadActivity, pointing to the .txt file to read from.
      */
-    public void updateFile(Uri theFileUri) {
-        String filePath = theFileUri.getPath();
+    public void updateFile(String filePath) {
+
+        Log.i("FILENAME", filePath);
 
         Log.e("storage", "External Storage State = " + Environment.getExternalStorageState());
 
@@ -152,10 +170,8 @@ public class PageFragment extends Fragment {
                     }
 
                     Log.e("notify", sbOutput.toString());
+                    startPage(sbOutput.toString());
 
-                    iPage = 0;
-                    sPages = pagesFromString(sbOutput.toString(), SCREEN_HEIGHT, SCREEN_WIDTH);
-                    mPageText.setText(sPages.get(iPage));
 
                 }
 
@@ -177,6 +193,26 @@ public class PageFragment extends Fragment {
         }
 
     }
+
+    /**
+     * Both starts the reading activity by loading in the first page
+     * and record relevant book info to the SQL server.
+     * @param theBook
+     */
+    public void startPage(String theBook) {
+        String bookTitle = "";
+        if (theBook.length() > 30) {
+            bookTitle = theBook.substring(0, 30);
+        }
+        String bookUrl = buildBookUrl(bookTitle);
+        addBook(bookUrl);
+
+        addBook(bookUrl);
+        iPage = 0;
+        sPages = pagesFromString(theBook, SCREEN_HEIGHT, SCREEN_WIDTH);
+        mPageText.setText(sPages.get(iPage));
+    }
+
 
 
     /**
@@ -245,4 +281,105 @@ public class PageFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         void onFragmentInteraction(Uri uri);
     }
+    public String buildBookUrl(String bookTitle) {
+
+        StringBuilder sb = new StringBuilder(ADD_BOOK_URL);
+
+        try {
+            sb.append("title=");
+            sb.append(URLEncoder.encode(bookTitle, "UTF-8"));
+
+
+            Log.i("ADDBOOKURL", sb.toString());
+
+        }
+        catch(Exception e) {
+            Toast.makeText(getContext(), "Cannot connect with database: " + e.getMessage(), Toast.LENGTH_LONG)
+                    .show();
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Adds the book info to the SQL server
+     * @param url the url required to add book info
+     */
+    public void addBook(String url) {
+
+        AddBookTask task = new AddBookTask();
+        task.execute(new String[]{url.toString()});
+    }
+
+    /**
+     * A class to add book data to the server while the user reads
+     */
+    private class AddBookTask extends AsyncTask<String, Void, String> {
+
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... urls) {
+            String response = "";
+            HttpURLConnection urlConnection = null;
+            for (String url : urls) {
+                try {
+                    URL urlObject = new URL(url);
+                    urlConnection = (HttpURLConnection) urlObject.openConnection();
+
+                    InputStream content = urlConnection.getInputStream();
+
+                    BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+                    String s = "";
+                    while ((s = buffer.readLine()) != null) {
+                        response += s;
+                    }
+
+                } catch (Exception e) {
+                    response = "Unable to add book, Reason: "
+                            + e.getMessage();
+                } finally {
+                    if (urlConnection != null)
+                        urlConnection.disconnect();
+                }
+            }
+            return response;
+        }
+
+
+        /**
+         * It checks to see if there was a problem with the URL(Network) which is when an
+         * exception is caught. It tries to call the parse Method and checks to see if it was successful.
+         * If not, it displays the exception.
+         *
+         * @param result
+         */
+        @Override
+        protected void onPostExecute(String result) {
+            // Something wrong with the network or the URL.
+            try {
+                JSONObject jsonObject = new JSONObject(result);
+                String status = (String) jsonObject.get("result");
+                if (status.equals("success")) {
+                    Toast.makeText(getContext(), "Book successfully added!"
+                            , Toast.LENGTH_LONG)
+                            .show();
+                } else {
+                    Toast.makeText(getContext(), "Failed to add: "
+                                    + jsonObject.get("error")
+                            , Toast.LENGTH_LONG)
+                            .show();
+                }
+            } catch (JSONException e) {
+                Toast.makeText(getContext(), "Book's info already recorded", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+
+    }
+
 }
