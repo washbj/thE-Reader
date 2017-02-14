@@ -33,7 +33,8 @@ import washbj.uw.tacoma.edu.the_reader.functionality.ReadActivity;
 
 
 /**
- *
+ * A fragment which allows the user to log into the app with a username/password.
+ * Checks the usernames/passwords against an online database to verify them.
  */
 public class LoginFragment extends Fragment {
     /** The URL of the database we're pulling passwords from. */
@@ -109,28 +110,23 @@ public class LoginFragment extends Fragment {
                             , Toast.LENGTH_SHORT)
                             .show();
                     fieldUsername.requestFocus();
-                    return;
                 } else if (mUsername.contains("\\s")) {
                     Toast.makeText(v.getContext(), "Username cannot contain whitespace!"
                             , Toast.LENGTH_SHORT)
                             .show();
-                    return;
                 } else if (mUsername.length() > 32) {
                     Toast.makeText(v.getContext(), "Username cannot be more than 32 characters in length!"
                             , Toast.LENGTH_SHORT)
                             .show();
-                    return;
                 } else if (TextUtils.isEmpty(mPassword)) {
                     Toast.makeText(v.getContext(), "Enter a Password!"
                             , Toast.LENGTH_SHORT)
                             .show();
                     fieldPassword.requestFocus();
-                    return;
                 } else if (mPassword.contains("\\s")) {
                     Toast.makeText(v.getContext(), "Password cannot contain whitespace!"
                             , Toast.LENGTH_SHORT)
                             .show();
-                    return;
                 } else {
                     attemptLogin();
 

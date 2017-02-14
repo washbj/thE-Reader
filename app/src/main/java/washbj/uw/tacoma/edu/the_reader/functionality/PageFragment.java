@@ -46,6 +46,7 @@ public class PageFragment extends Fragment {
      * The url of the book add php code
      */
     private static final String ADD_BOOK_URL ="http://cssgate.insttech.washington.edu/~_450bteam5/addBook.php?";
+
     /** Hard-coded variable for the screen width to use when calculating how much text will fit. */
     private static final int SCREEN_WIDTH = 200;
 
@@ -65,7 +66,7 @@ public class PageFragment extends Fragment {
     TextView mPageText;
 
     /** An ArrayList of all pages, stored as Strings. */
-    ArrayList<String> sPages = new ArrayList<String>();
+    ArrayList<String> sPages = new ArrayList<>();
 
     /** The current page. */
     int iPage = 0;
@@ -88,13 +89,6 @@ public class PageFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-        }
-
-    }
-
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -197,7 +191,7 @@ public class PageFragment extends Fragment {
     /**
      * Both starts the reading activity by loading in the first page
      * and record relevant book info to the SQL server.
-     * @param theBook
+     * @param theBook The book to start reading.
      */
     public void startPage(String theBook) {
         String bookTitle = "";
@@ -228,14 +222,17 @@ public class PageFragment extends Fragment {
         Paint painter = new Paint();
         painter.setTextSize(TEXT_SIZE);
         int iMaxLines = theBoundingHeight / TEXT_SIZE;
-        int iChars = 0;
+        int iChars;
         String sWords = theInputWords;
 
-        ArrayList<String> sReturn = new ArrayList<String>();
+        ArrayList<String> sReturn = new ArrayList<>();
         int iEnd = 0;
 
+        // Loops through text, splitting it into page-sized pieces.
         while  (sWords.length() > 0) {
+            Log.e("pagecount", "Words left: " + sWords.length());
             for (int iCount = 0; iCount < iMaxLines; iCount++) {
+                Log.e("forloop", "Mark");
                 iChars = painter.breakText(sWords.substring(iEnd), true, theBoundingWidth, null);
 
                 if (iEnd + iChars < sWords.length()) {
@@ -308,7 +305,7 @@ public class PageFragment extends Fragment {
     public void addBook(String url) {
 
         AddBookTask task = new AddBookTask();
-        task.execute(new String[]{url.toString()});
+        task.execute(new String[]{url});
     }
 
     /**
@@ -334,7 +331,7 @@ public class PageFragment extends Fragment {
                     InputStream content = urlConnection.getInputStream();
 
                     BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
-                    String s = "";
+                    String s;
                     while ((s = buffer.readLine()) != null) {
                         response += s;
                     }
@@ -356,7 +353,7 @@ public class PageFragment extends Fragment {
          * exception is caught. It tries to call the parse Method and checks to see if it was successful.
          * If not, it displays the exception.
          *
-         * @param result
+         * @param result The incoming JSON info to parse.
          */
         @Override
         protected void onPostExecute(String result) {

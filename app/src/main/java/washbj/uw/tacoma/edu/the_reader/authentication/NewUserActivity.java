@@ -52,6 +52,7 @@ public class NewUserActivity extends AppCompatActivity {
                 mUsername = fieldUsername.getText().toString();
                 mPassword = fieldPassword.getText().toString();
 
+                // Test entered data across all spectrums.
                 if (TextUtils.isEmpty(mUsername)) {
                     Toast.makeText(v.getContext(), "Enter a Username!"
                             , Toast.LENGTH_SHORT)
@@ -100,6 +101,7 @@ public class NewUserActivity extends AppCompatActivity {
         protected String doInBackground(String... urls) {
             String response = "";
             HttpURLConnection urlConnection = null;
+            // Attempt to download user information from the database.
             for (String url : urls) {
                 try {
                     URL urlObject = new URL(url);
@@ -128,7 +130,7 @@ public class NewUserActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            // Something wrong with the network or the URL.
+            // Something is wrong with the network or the URL.
             if (result.startsWith("Unable to")) {
                 Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG)
                         .show();
@@ -138,7 +140,7 @@ public class NewUserActivity extends AppCompatActivity {
             HashMap<String, String> hmUserMap = new HashMap<String, String>();
             result = LoginFragment.parseUsersJSON(result, hmUserMap);
 
-            // Something wrong with the JSON returned.
+            // Something is wrong with the JSON returned.
             if (result != null) {
                 Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG)
                         .show();
@@ -167,6 +169,7 @@ public class NewUserActivity extends AppCompatActivity {
 
                 }
 
+                // Begin new task. This one must add a new user.
                 AddUserTask task = new AddUserTask();
                 task.execute(new String[]{sbURL.toString()});
 
@@ -216,7 +219,7 @@ public class NewUserActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            // Something wrong with the network or the URL.
+            // Something was wrong with the network or the URL.
             try {
                 JSONObject jsonObject = new JSONObject(result);
                 String status = (String) jsonObject.get("result");

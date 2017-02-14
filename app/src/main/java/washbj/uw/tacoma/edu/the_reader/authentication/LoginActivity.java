@@ -22,6 +22,9 @@ import java.util.HashMap;
 import washbj.uw.tacoma.edu.the_reader.R;
 import washbj.uw.tacoma.edu.the_reader.functionality.ReadActivity;
 
+/**
+ * A shell activity for holding LoginFragment.
+ */
 public class LoginActivity extends AppCompatActivity
         implements LoginFragment.LoginInteractionListener {
     private SharedPreferences mSharedPreferences;
