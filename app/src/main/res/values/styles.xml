@@ -2,10 +2,27 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/colorLPrimary</item>
+        <item name="colorPrimaryDark">@color/colorDPrimary</item>
+        <item name="colorAccent">@color/colorLGold</item>
+    </style>
+
+    <!-- Primary Toolbar Theme (Mahogany Bar) -->
+    <style name="ToolbarPrimary">
+        <item name="android:textColor">@color/colorDGold</item>
+        <item name="android:background">@drawable/wood_gradient</item>
+    </style>
+
+    <!-- Style for Fancy Buttons -->
+    <style name="fancy_button">
+        <item name="android:background">@drawable/fancy_button</item>
+        <item name="android:textColor">@color/colorDGold</item>
+    </style>
+
+    <!-- Style for Gold Text -->
+    <style name="gold_text">
+        <item name="android:textColor">@color/colorLGold</item>
+        <item name="android:textColorHint">@color/colorContrast</item>
     </style>
 
 </resources>

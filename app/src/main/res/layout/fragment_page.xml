@@ -5,10 +5,9 @@
     tools:context="washbj.uw.tacoma.edu.the_reader.functionality.PageFragment"
     android:id="@+id/frame">
 
-    <!-- TODO: Update blank fragment layout -->
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/page_text" />
+        android:id="@+id/page_text"
+        android:textColor="@color/colorInk"/>
 </FrameLayout>

@@ -10,28 +10,34 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textWebEmailAddress"
-        android:hint="Username" />
+        android:hint="Username"
+        style="@style/gold_text"/>
 
     <EditText
         android:id="@+id/enter_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textPassword"
-        android:hint="Password" />
+        android:hint="Password"
+        style="@style/gold_text"/>
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/button_login"
         android:layout_gravity="end"
-        android:text="Login" />
+        android:text="Login"
+        style="@style/fancy_button"
+        android:layout_marginTop="10dp"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/button_new_user"
         android:layout_gravity="end"
-        android:text="Add New User" />
+        android:text="Add New User"
+        style="@style/fancy_button"
+        android:layout_marginTop="10dp"/>
 
 </LinearLayout>
 
