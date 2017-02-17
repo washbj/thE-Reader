@@ -16,14 +16,14 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
     /**
      * Detects Swiping gestures
      */
-    private final GestureDetector gestureDetector;
+    private final GestureDetector mGestureDetector;
 
     /**
      * A default constructor
      * @param context the view
      */
     public OnSwipeTouchListener(Context context) {
-        gestureDetector = new GestureDetector(context, new GestureListener());
+        mGestureDetector = new GestureDetector(context, new GestureListener());
     }
 
     /**
@@ -45,7 +45,7 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
      * @return a boolean signigying being touched
      */
     public boolean onTouch(View v, MotionEvent event) {
-        return gestureDetector.onTouchEvent(event);
+        return mGestureDetector.onTouchEvent(event);
     }
 
     /**

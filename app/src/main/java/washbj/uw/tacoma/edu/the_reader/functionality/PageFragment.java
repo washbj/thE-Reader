@@ -60,16 +60,16 @@ public class PageFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     /** The input text to convert to pages. */
-    String sInputText;
+    String mInputText;
 
     /** The TextView used to print pages to the screen. */
     TextView mPageText;
 
     /** An ArrayList of all pages, stored as Strings. */
-    ArrayList<String> sPages = new ArrayList<>();
+    ArrayList<String> mPages = new ArrayList<>();
 
     /** The current page. */
-    int iPage = 0;
+    int mPageNumber = 0;
 
     public PageFragment() {
         // Required empty public constructor
@@ -116,10 +116,10 @@ public class PageFragment extends Fragment {
      * Flips to the next page in the series. Will not flip if there are no more pages.
      */
     public void flipForward() {
-        if (iPage < sPages.size() - 1) {
-            iPage++;
+        if (mPageNumber < mPages.size() - 1) {
+            mPageNumber++;
 
-            mPageText.setText(sPages.get(iPage));
+            mPageText.setText(mPages.get(mPageNumber));
 
         }
 
@@ -129,9 +129,9 @@ public class PageFragment extends Fragment {
      * Flips back one page in the series. Will not flip if at the beginning page.
      */
     public void flipBack() {
-        if (iPage > 0) {
-            iPage--;
-            mPageText.setText(sPages.get(iPage));
+        if (mPageNumber > 0) {
+            mPageNumber--;
+            mPageText.setText(mPages.get(mPageNumber));
 
         }
 
@@ -202,9 +202,9 @@ public class PageFragment extends Fragment {
         addBook(bookUrl);
 
         addBook(bookUrl);
-        iPage = 0;
-        sPages = pagesFromString(theBook, SCREEN_HEIGHT, SCREEN_WIDTH);
-        mPageText.setText(sPages.get(iPage));
+        mPageNumber = 0;
+        mPages = pagesFromString(theBook, SCREEN_HEIGHT, SCREEN_WIDTH);
+        mPageText.setText(mPages.get(mPageNumber));
     }
 
 
