@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#1aaf3a</color>
-    <color name="colorPrimaryDark">#296d18</color>
-    <color name="colorAccent">#a52626</color>
+    <color name="colorLPrimary">#4c1d09</color>
+    <color name="colorDPrimary">#2b1810</color>
+    <color name="colorLGold">#b58d17</color>
+    <color name="colorDGold">#ad8200</color>
+    <color name="colorAccent">#470c0c</color>
+    <color name="colorLParchment">#edd9a1</color>
+    <color name="colorDParchment">#af9f72</color>
+    <color name="colorContrast">#7f57c6bd</color>
+    <color name="colorInk">#010314</color>
 </resources>

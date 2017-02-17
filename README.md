@@ -1,5 +1,5 @@
 		  ~ The Swellest Reader ~
-	~ An App by Team Halvsie-Bakesie Tater Forcey ~
+	~ An App by Team Mostly-Bakesie Tater Forcey ~
 The purpose of this app is to bridge the gap between the convenience 
 factor of an e-book and the “feel” of an actual book. The app will 
 take an input text file and display it in a book-like way, printing 
@@ -18,3 +18,9 @@ little more than the minimum desired features. These features include:
    to save things like personalization options.
  - Book titles (at the moment the first thirty characters) are 
    also saved to an online database.
+
+Known Issues:
+ - App seems unable to process very large files (upwards of 600 kb).
+   Possibly due to inefficient code. We have a plan to fix this, 
+   but were unable to implement it before the deliverable due to 
+   time constraints.

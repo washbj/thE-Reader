@@ -9,27 +9,32 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
-    tools:context="washbj.uw.tacoma.edu.the_reader.authentication.NewUserActivity">
+    tools:context="washbj.uw.tacoma.edu.the_reader.authentication.NewUserActivity"
+    android:fitsSystemWindows="true"
+    android:background="@drawable/wood_gradient">
 
     <EditText
         android:id="@+id/new_username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textWebEmailAddress"
-        android:hint="Username" />
+        android:hint="Username"
+        style="@style/gold_text"/>
 
     <EditText
         android:id="@+id/new_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textPassword"
-        android:hint="Password" />
+        android:hint="Password"
+        style="@style/gold_text"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/button_add_user"
         android:layout_gravity="end"
-        android:text="Add User" />
+        android:text="Add User"
+        style="@style/fancy_button"/>
 
 </LinearLayout>
