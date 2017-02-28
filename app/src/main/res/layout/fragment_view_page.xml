@@ -1,0 +1,15 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_view_page"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="washbj.uw.tacoma.edu.the_reader.functionality.ViewPageFragment">
+
+    <TextView style="?android:textAppearanceMedium"
+        android:id="@+id/page_text"
+        android:padding="16dp"
+        android:lineSpacingMultiplier="1.2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="" />
+</ScrollView>
