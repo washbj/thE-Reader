@@ -1,24 +1,28 @@
 package washbj.uw.tacoma.edu.the_reader.functionality;
 
 import android.Manifest;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.StaticLayout;
@@ -27,18 +31,19 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import washbj.uw.tacoma.edu.the_reader.Data.BookDB;
 import washbj.uw.tacoma.edu.the_reader.R;
 import washbj.uw.tacoma.edu.the_reader.authentication.LoginActivity;
+
+import static android.icu.util.ULocale.getName;
 
 /**
  * The main activity to view the book's text. Also has a menu bar to log out
@@ -66,11 +71,17 @@ public class ReadActivity extends AppCompatActivity
      * The pager adapter, which provides the pages to the view pager widget.
      */
     private PagerAdapter mPagerAdapter;
+    /**
+     * The SQLite database to store book info
+     */
+    private BookDB mBookDB;
 
     private float mLineSpacingMult = 1.2f;
     private float mLineSpacingExt = 14.0f;
     private float mTextSize = 20;
     private Typeface mTypeface = Typeface.MONOSPACE;
+
+    private String filename;
 
     private String[] mPages;
 
@@ -139,12 +150,62 @@ public class ReadActivity extends AppCompatActivity
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        String fullPath = "";
+        Uri uri;
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_PICKED_RESULT) {
+            if (resultCode == RESULT_OK) {
+
+                uri = data.getData();
+                String mimeType = getContentResolver().getType(uri);
+                if (mimeType == null) {
+                    fullPath = getPath(this, uri);
+                    if (fullPath == null) {
+                        filename = getName(uri.toString());
+                    } else {
+                        File file = new File(fullPath);
+                        filename = file.getName();
+                    }
+                } else {
+                    Uri returnUri = data.getData();
+                    Cursor returnCursor = getContentResolver().query(returnUri, null, null, null, null);
+                    int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
+                    returnCursor.moveToFirst();
+                    filename = returnCursor.getString(nameIndex);
+                    String size = Long.toString(returnCursor.getLong(sizeIndex));
+                }
+
+
+                if (mBookDB == null) {
+                    mBookDB = new BookDB(this);
+                }
+                //mBookDB.deleteBooks();
+                Log.i("LoadBook", filename + "      " + uri.toString());
+
+                //always sets page to 0
+               /* if (!mBookDB.CheckIsBookAlreadyInDBorNot(filename)) {
+                    mBookDB.insertBook(filename, 0);
+                }*/
+                //loadFile(uri);
+                try {
+                    readTextFromUri(Uri.parse(uri.toString()));
+                   // readTextFromUri(uri);
+                } catch (Exception e) {
+
+                }
+
+
+            }
+      /*  super.onActivityResult(requestCode, resultCode, data);
 
         if  (requestCode == FILE_PICKED_RESULT) {
             if  (resultCode == RESULT_OK) {
                 Uri fileURI = data.getData();
+                Log.i("LoadBook", fileURI.toString());
                 String filePath = fileURI.getPath();
+
+
                 //for select devices that do not give the file path (Samsung):
                 if (!filePath.contains(".txt")) {
                     try {
@@ -158,12 +219,9 @@ public class ReadActivity extends AppCompatActivity
                 } else {
                     loadFile(filePath);
                 }
-
-
             }
-
+        }*/
         }
-
     }
 
     private void checkPermissions() {
@@ -176,56 +234,26 @@ public class ReadActivity extends AppCompatActivity
         }
     }
 
-
     /**
-     * Loads in a file from some path, converting it to a
-     * string and sending it off to the book-building methods.
-     *
-     * @param theFilePath The path to load the file from.
+     * Gets the text from the chosen file and passes it to the book builder
+     * @param uri the uri of the chosen file
+     * @throws IOException
      */
-    private void loadFile(String theFilePath) {
-        Log.i("FILENAME", theFilePath);
 
-        Log.e("storage", "External Storage State = " + Environment.getExternalStorageState());
-
-        if (theFilePath.contains(".txt")) {
-            BufferedReader brInput;
-            StringBuilder sbOutput = new StringBuilder();
-            File file = new File(theFilePath);
-
-            try {
-                if (file.exists()) {
-                    brInput = new BufferedReader(new FileReader(file));
-                    String sLine;
-
-                    while ((sLine = brInput.readLine()) != null) {
-                        sbOutput.append(sLine);
-
-                    }
-
-                    Log.e("notify", sbOutput.toString());
-                    buildBook(sbOutput.toString());
-
-
-                }
-
-            } catch (FileNotFoundException exception) {
-                Log.e("exception", exception.toString());
-                Log.e("error", "--- ViewPageFragment could not open file [" + theFilePath + "]!");
-
-            } catch (IOException exception) {
-                Log.e("exception", exception.toString());
-                Log.e("error", "--- ViewPageFragment could not read file [" + theFilePath + "]!");
-
-            }
-
-        } else {
-            Log.e("error", "--- PATH [" + theFilePath + "]!");
-            Toast toast = Toast.makeText(this, "File isn't a .txt!", Toast.LENGTH_SHORT);
-            toast.show();
-
+    private void readTextFromUri(Uri uri) throws IOException {
+        InputStream inputStream = getContentResolver().openInputStream(uri);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                inputStream));
+        StringBuilder stringBuilder = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            stringBuilder.append(line);
         }
+        inputStream.close();
+        reader.close();
+        buildBook(stringBuilder.toString());
     }
+
 
 
     /**
@@ -335,5 +363,108 @@ public class ReadActivity extends AppCompatActivity
 
     }
 
+            public static String getPath(Context context, Uri uri) {
+                final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+
+                // DocumentProvider
+                if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+                    // ExternalStorageProvider
+                    if (isExternalStorageDocument(uri)) {
+                        final String docId = DocumentsContract.getDocumentId(uri);
+                        final String[] split = docId.split(":");
+                        final String type = split[0];
+
+                        if ("primary".equalsIgnoreCase(type)) {
+                            return Environment.getExternalStorageDirectory() + "/" + split[1];
+                        }
+                        // TODO handle non-primary volumes
+                    }
+                    // DownloadsProvider
+                    else if (isDownloadsDocument(uri)) {
+                        final String id = DocumentsContract.getDocumentId(uri);
+                        final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                        return getDataColumn(context, contentUri, null, null);
+                    }
+                    // MediaProvider
+                    else
+                    if (isMediaDocument(uri)) {
+                        final String docId = DocumentsContract.getDocumentId(uri);
+                        final String[] split = docId.split(":");
+                        final String type = split[0];
+                        Uri contentUri = null;
+                        if ("image".equals(type)) {
+                            contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                        } else if ("video".equals(type)) {
+                            contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                        } else if ("audio".equals(type)) {
+                            contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                        }
+                        final String selection = "_id=?";
+                        final String[] selectionArgs = new String[] {split[1]};
+                        return getDataColumn(context, contentUri, selection, selectionArgs);
+                    }
+                }
+                // MediaStore (and general)
+                else if ("content".equalsIgnoreCase(uri.getScheme())) {
+                    // Return the remote address
+                    if (isGooglePhotosUri(uri))
+                        return uri.getLastPathSegment();
+                    return getDataColumn(context, uri, null, null);
+                }
+                // File
+                else if ("file".equalsIgnoreCase(uri.getScheme())) {
+                    return uri.getPath();
+                }
+                return null;
+            }
+
+            public static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
+                Cursor cursor = null;
+                final String column = "_data";
+                final String[] projection = { column };
+                try {
+                    cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+                    if (cursor != null && cursor.moveToFirst()) {
+                        final int index = cursor.getColumnIndexOrThrow(column);
+                        return cursor.getString(index);
+                    }
+                } finally {
+                    if (cursor != null)
+                        cursor.close();
+                }
+                return null;
+            }
+
+            public static boolean isExternalStorageDocument(Uri uri) {
+                return "com.android.externalstorage.documents".equals(uri.getAuthority());
+            }
+
+/**
+ * @param uri The Uri to check.
+ * @return Whether the Uri authority is DownloadsProvider.
+ */
+            public static boolean isDownloadsDocument(Uri uri) {
+                return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+            }
+
+/**
+ * @param uri The Uri to check.
+ * @return Whether the Uri authority is MediaProvider.
+ */
+            public static boolean isMediaDocument(Uri uri) {
+                return "com.android.providers.media.documents".equals(uri.getAuthority());
+            }
+
+/**
+ * @param uri The Uri to check.
+ * @return Whether the Uri authority is Google Photos.
+ */
+            public static boolean isGooglePhotosUri(Uri uri) {
+                return "com.google.android.apps.photos.content".equals(uri.getAuthority());
+            }
+
+
+
 }
+
 

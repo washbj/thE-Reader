@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="CREATE_BOOK_SQL">
+    CREATE TABLE IF NOT EXISTS Books
+    (file_id TEXT PRIMARY KEY, page INTEGER, book_name TEXT)
+</string>
+
+<string name="DROP_BOOK_SQL">
+    DROP TABLE IF EXISTS Books
+</string>
+
+
+</resources>
