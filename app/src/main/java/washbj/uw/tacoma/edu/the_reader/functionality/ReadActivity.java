@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -31,12 +32,19 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import washbj.uw.tacoma.edu.the_reader.Data.BookDB;
@@ -62,6 +70,20 @@ public class ReadActivity extends AppCompatActivity
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
 
     /**
+     * The url of the book add php code
+     */
+    private static final String ADD_BOOK_URL ="http://cssgate.insttech.washington.edu/~_450bteam5/addBook.php?";
+
+    /**
+     * Code to show a file is being opened
+     */
+    private static final String OPEN_BOOK = "open";
+
+    /**
+     * Code to show a file is being closed or needs to be saved
+     */
+    private static final String  CLOSE_BOOK = "close";
+    /**
      * The pager widget, which handles animation and allows swiping horizontally to access previous
      * and next wizard steps.
      */
@@ -81,10 +103,32 @@ public class ReadActivity extends AppCompatActivity
     private float mTextSize = 20;
     private Typeface mTypeface = Typeface.MONOSPACE;
 
-    private String filename;
 
+    /**
+     * Array of strings to represent each page of a book
+     */
     private String[] mPages;
 
+    /**
+     * The current page number
+     */
+    private int mPageNUmber;
+
+    /**
+     * The name of the file
+     */
+    private String mFileName;
+
+    /**
+     * The complete file path
+     */
+    private String mFIleLocation;
+
+
+    /**
+     * Creates the Activity and sets up the fragment
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,6 +145,11 @@ public class ReadActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Creates the option menu
+     * @param menu
+     * @return always true
+     */
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.options_menu, menu);
@@ -146,7 +195,7 @@ public class ReadActivity extends AppCompatActivity
      * of optimization)
      * @param requestCode
      * @param resultCode
-     * @param data
+     * @param data the file picked
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -161,10 +210,10 @@ public class ReadActivity extends AppCompatActivity
                 if (mimeType == null) {
                     fullPath = getPath(this, uri);
                     if (fullPath == null) {
-                        filename = getName(uri.toString());
+                        mFileName = getName(uri.toString());
                     } else {
                         File file = new File(fullPath);
-                        filename = file.getName();
+                        mFileName = file.getName();
                     }
                 } else {
                     Uri returnUri = data.getData();
@@ -172,58 +221,32 @@ public class ReadActivity extends AppCompatActivity
                     int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                     int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
                     returnCursor.moveToFirst();
-                    filename = returnCursor.getString(nameIndex);
+                    mFileName = returnCursor.getString(nameIndex);
                     String size = Long.toString(returnCursor.getLong(sizeIndex));
                 }
-
-
-                if (mBookDB == null) {
-                    mBookDB = new BookDB(this);
+                try {
+                    mFIleLocation = URLEncoder.encode(uri.toString(), "UTF-8");
+                }catch (Exception e) {
+                    Log.e("FileLoad", e.getMessage());
                 }
-                //mBookDB.deleteBooks();
-                Log.i("LoadBook", filename + "      " + uri.toString());
-
-                //always sets page to 0
-               /* if (!mBookDB.CheckIsBookAlreadyInDBorNot(filename)) {
-                    mBookDB.insertBook(filename, 0);
-                }*/
+                Log.i("FileLoad:", mFileName + "         " + mFIleLocation);
                 //loadFile(uri);
                 try {
                     readTextFromUri(Uri.parse(uri.toString()));
                    // readTextFromUri(uri);
                 } catch (Exception e) {
-
+                    Log.e("FileLoad", e.getMessage());
                 }
 
 
             }
-      /*  super.onActivityResult(requestCode, resultCode, data);
 
-        if  (requestCode == FILE_PICKED_RESULT) {
-            if  (resultCode == RESULT_OK) {
-                Uri fileURI = data.getData();
-                Log.i("LoadBook", fileURI.toString());
-                String filePath = fileURI.getPath();
-
-
-                //for select devices that do not give the file path (Samsung):
-                if (!filePath.contains(".txt")) {
-                    try {
-                        InputStream file = getContentResolver().openInputStream(fileURI);
-                        java.util.Scanner s = new java.util.Scanner(file).useDelimiter("\\A");
-                        filePath = s.hasNext() ? s.next() : "";
-                        loadFile(filePath);
-                    } catch (Exception e) {
-                        Log.e("FileError", "Error opening file" + e);
-                    }
-                } else {
-                    loadFile(filePath);
-                }
-            }
-        }*/
         }
     }
 
+    /**
+     * Checks to make sure we can read and write before doing so
+     */
     private void checkPermissions() {
         String[] saPermissions = { Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE };
 
@@ -235,7 +258,8 @@ public class ReadActivity extends AppCompatActivity
     }
 
     /**
-     * Gets the text from the chosen file and passes it to the book builder
+     * Gets the text from the chosen file and passes it to the book builder.
+     * Also adds the book name to the database
      * @param uri the uri of the chosen file
      * @throws IOException
      */
@@ -251,28 +275,49 @@ public class ReadActivity extends AppCompatActivity
         }
         inputStream.close();
         reader.close();
-        buildBook(stringBuilder.toString());
+        addBook();
+        bufferPages(mFileName, stringBuilder.toString());
     }
 
+    /**
+     * Adds the book info to the SQL server
+     */
+    public void addBook() {
+        AddBookTask task = new AddBookTask();
+        SaveBookProgress saveTask = new SaveBookProgress();
+        saveTask.execute(new String[]{OPEN_BOOK});
+        task.execute(new String[]{buildBookUrl()});
+    }
 
 
     /**
-     * Both starts the reading activity by loading in the first page
-     * and record relevant book info to the SQL server.
-     *
-     * @param theInputString
+     * Stores relevant book info when the user is done reading.
+     * Mainly for the sake of restoring the page number.
      */
-    private void buildBook(String theInputString) {
-        String bookTitle = "";
-        if (theInputString.length() > 30) {
-            bookTitle = theInputString.substring(0, 30);
+    @Override
+    public void onStop() {
+        if (mFIleLocation != null) {
+            SaveBookProgress saveTask = new SaveBookProgress();
+            mPageNUmber = mPager.getCurrentItem();
+            saveTask.execute(new String[]{CLOSE_BOOK});
+            Log.i("OnStop", "" + mPageNUmber);
         }
-        //String bookUrl = buildBookUrl(bookTitle);
-        //addBook(bookUrl);
-
-        bufferPages(bookTitle, theInputString);
-
+        super.onStop();
     }
+
+    /**
+     * Closes the database when destroyed.
+     */
+    @Override
+    public void onDestroy() {
+       // SaveBookProgress saveTask = new SaveBookProgress();
+       // saveTask.execute(new String[]{CLOSE_BOOK});
+        //Toast.makeText(this, "Saved book on page: " + mPageNUmber, Toast.LENGTH_LONG);
+        mBookDB.closeDB();
+        Log.i("OnDestroy", "" + mPageNUmber);
+        super.onDestroy();
+    }
+
 
 
     /**
@@ -320,15 +365,35 @@ public class ReadActivity extends AppCompatActivity
         mPages = alReturn.toArray(new String[alReturn.size()]);
         mPagerAdapter.notifyDataSetChanged();
         mPager.setAdapter(mPagerAdapter);
-        mPager.setCurrentItem(0);
+
+        mPager.postDelayed(new Runnable() {
+
+            //Requires delay so that the page fragment can be built first
+            @Override
+            public void run() {
+                Log.i("CUrrentPageToBEOPened", "" + mPageNUmber);
+                mPager.setCurrentItem(mPageNUmber);
+            }
+        }, 100);
+        //mPager.setCurrentItem(mPageNUmber);
+
 
     }
 
+    /**
+     * Default needed method
+     * @param uri
+     */
     @Override
     public void onFragmentInteraction(Uri uri) {
 
     }
 
+    /**
+     * If the user is currently looking at the first step, allow the system to handle the
+     * Back button. This calls finish() on this activity and pops the back stack.
+     * Otherwise, select the previous step.
+     */
     @Override
     public void onBackPressed() {
         if (mPager.getCurrentItem() == 0) {
@@ -353,6 +418,7 @@ public class ReadActivity extends AppCompatActivity
         @Override
         public Fragment getItem(int position) {
             ViewPageFragment page = ViewPageFragment.newInstance(mPages[position], mTextSize, mTypeface);
+
             return page;
         }
 
@@ -363,107 +429,226 @@ public class ReadActivity extends AppCompatActivity
 
     }
 
-            public static String getPath(Context context, Uri uri) {
-                final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+    /**
+     * Method that looks at the file path if it is in a Android folder that renames the file.
+     * Returns the actual file name instead of something like: Doccument/555
+     * @param context current activity
+     * @param uri the file path
+     * @return the actual file name
+     */
+    public static String getPath(Context context, Uri uri) {
+        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 
-                // DocumentProvider
-                if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
-                    // ExternalStorageProvider
-                    if (isExternalStorageDocument(uri)) {
-                        final String docId = DocumentsContract.getDocumentId(uri);
-                        final String[] split = docId.split(":");
-                        final String type = split[0];
-
-                        if ("primary".equalsIgnoreCase(type)) {
-                            return Environment.getExternalStorageDirectory() + "/" + split[1];
-                        }
-                        // TODO handle non-primary volumes
-                    }
-                    // DownloadsProvider
-                    else if (isDownloadsDocument(uri)) {
-                        final String id = DocumentsContract.getDocumentId(uri);
-                        final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-                        return getDataColumn(context, contentUri, null, null);
-                    }
-                    // MediaProvider
-                    else
-                    if (isMediaDocument(uri)) {
-                        final String docId = DocumentsContract.getDocumentId(uri);
-                        final String[] split = docId.split(":");
-                        final String type = split[0];
-                        Uri contentUri = null;
-                        if ("image".equals(type)) {
-                            contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                        } else if ("video".equals(type)) {
-                            contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                        } else if ("audio".equals(type)) {
-                            contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                        }
-                        final String selection = "_id=?";
-                        final String[] selectionArgs = new String[] {split[1]};
-                        return getDataColumn(context, contentUri, selection, selectionArgs);
-                    }
+        // DocumentProvider
+        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            // ExternalStorageProvider
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+                if ("primary".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
                 }
-                // MediaStore (and general)
-                else if ("content".equalsIgnoreCase(uri.getScheme())) {
-                    // Return the remote address
-                    if (isGooglePhotosUri(uri))
-                        return uri.getLastPathSegment();
-                    return getDataColumn(context, uri, null, null);
-                }
-                // File
-                else if ("file".equalsIgnoreCase(uri.getScheme())) {
-                    return uri.getPath();
-                }
-                return null;
+                // TODO handle non-primary volumes
             }
-
-            public static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
-                Cursor cursor = null;
-                final String column = "_data";
-                final String[] projection = { column };
-                try {
-                    cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
-                    if (cursor != null && cursor.moveToFirst()) {
-                        final int index = cursor.getColumnIndexOrThrow(column);
-                        return cursor.getString(index);
-                    }
-                } finally {
-                    if (cursor != null)
-                        cursor.close();
+            // DownloadsProvider
+            else if (isDownloadsDocument(uri)) {
+                final String id = DocumentsContract.getDocumentId(uri);
+                final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                return getDataColumn(context, contentUri, null, null);
+            }
+            // MediaProvider
+            else
+            if (isMediaDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+                Uri contentUri = null;
+                if ("image".equals(type)) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
                 }
-                return null;
+                final String selection = "_id=?";
+                final String[] selectionArgs = new String[] {split[1]};
+                return getDataColumn(context, contentUri, selection, selectionArgs);
             }
+        }
+        // MediaStore (and general)
+        else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            // Return the remote address
+            if (isGooglePhotosUri(uri))
+                return uri.getLastPathSegment();
+            return getDataColumn(context, uri, null, null);
+        }
+        // File
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+        return null;
+    }
 
-            public static boolean isExternalStorageDocument(Uri uri) {
-                return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    public static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = { column };
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(index);
             }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
+    }
+
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
 
 /**
  * @param uri The Uri to check.
  * @return Whether the Uri authority is DownloadsProvider.
  */
-            public static boolean isDownloadsDocument(Uri uri) {
-                return "com.android.providers.downloads.documents".equals(uri.getAuthority());
-            }
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
 
 /**
  * @param uri The Uri to check.
  * @return Whether the Uri authority is MediaProvider.
  */
-            public static boolean isMediaDocument(Uri uri) {
-                return "com.android.providers.media.documents".equals(uri.getAuthority());
-            }
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
 
 /**
  * @param uri The Uri to check.
  * @return Whether the Uri authority is Google Photos.
  */
-            public static boolean isGooglePhotosUri(Uri uri) {
-                return "com.google.android.apps.photos.content".equals(uri.getAuthority());
+    public static boolean isGooglePhotosUri(Uri uri) {
+        return "com.google.android.apps.photos.content".equals(uri.getAuthority());
+    }
+
+
+    /**
+     * Builds the book url with the filename
+     * @return the php url.
+     */
+    public String buildBookUrl() {
+
+        StringBuilder sb = new StringBuilder(ADD_BOOK_URL);
+
+        try {
+            sb.append("title=");
+            sb.append(URLEncoder.encode(mFileName, "UTF-8"));
+
+             Log.i("ADDBOOKURL", sb.toString());
+
+             }
+        catch(Exception e) {
+            Toast.makeText(this,  "Cannot connect with database: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+         return sb.toString();
+    }
+
+    /**
+     * Saves the books info to the sqlite database.
+     */
+    private class SaveBookProgress extends AsyncTask<String, Void, String> {
+
+        /**
+         * Records fileLocation, page and FileName to the database
+         * @param params Close or Open code
+         * @return generic info string.
+         */
+        @Override
+        protected String doInBackground(String... params) {
+            if (mBookDB == null) {
+                mBookDB = new BookDB(getApplicationContext());
+
             }
+            if (!mBookDB.CheckIsBookAlreadyInDBorNot(mFIleLocation)) {
+                mPageNUmber = 0;
+                mBookDB.insertBook(mFIleLocation, mPageNUmber, mFileName);
+            } else {
+                if (params[0].equals(OPEN_BOOK)) {
+                    mPageNUmber = mBookDB.CheckPageNumber(mFIleLocation);
+                } else if ( params[0].equals(CLOSE_BOOK)) {
+                    mBookDB.updateBook(mFIleLocation, mPageNUmber, mFileName);
+                }
+            }
+            return "Attempting to store user info:" + mFIleLocation + " "
+            + " " + mPageNUmber + "  " + mFileName;
+        }
+    }
 
 
+    /**
+     * A class to add book data to the SQL server
+     */
+        private class AddBookTask extends AsyncTask<String, Void, String> {
+
+
+        /**
+         * Attempts to add the data to the server with the given url
+         * @param urls the url with the data and php command name
+         * @return the result
+         */
+            @Override
+            protected String doInBackground(String... urls) {
+                String response = "";
+                HttpURLConnection urlConnection = null;
+                for (String url : urls) {
+                try {
+                    URL urlObject = new URL(url);
+                    urlConnection = (HttpURLConnection) urlObject.openConnection();
+                    InputStream content = urlConnection.getInputStream();
+                    BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+                    String s = "";
+                    while ((s = buffer.readLine()) != null) {
+                        response += s;
+                    }
+                } catch (Exception e) {
+                    response = "Unable to add book, Reason: "
+                            + e.getMessage();
+                } finally {
+                    if (urlConnection != null)
+                        urlConnection.disconnect();
+                 }
+            }
+            return response;
+        }
+    /**
+     * It checks to see if there was a problem with the URL(Network) which is when an
+     * exception is caught. It tries to call the parse Method and checks to see if it was successful.
+     * If not, it displays the exception.
+     *
+     * @param result
+     */
+        @Override
+        protected void onPostExecute(String result) {
+            // Something wrong with the network or the URL.
+            try {
+                JSONObject jsonObject = new JSONObject(result);
+                    String status = (String) jsonObject.get("result");
+                    if (status.equals("success")) {
+                        Toast.makeText(getApplicationContext(),  "Book successfully added!" , Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Failed to add: " + jsonObject.get("error")
+                                        , Toast.LENGTH_LONG)
+                                        .show();
+                    }
+            } catch (JSONException e) {
+                Toast.makeText(getApplicationContext(), "Book's info already recorded", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
 }
 
