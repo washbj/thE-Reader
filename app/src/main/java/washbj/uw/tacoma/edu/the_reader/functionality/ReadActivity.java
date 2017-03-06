@@ -1,23 +1,12 @@
 package washbj.uw.tacoma.edu.the_reader.functionality;
 
-import android.Manifest;
-import android.content.ContentUris;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
-import android.provider.OpenableColumns;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -29,16 +18,12 @@ import android.text.SpannableStringBuilder;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -49,9 +34,6 @@ import java.util.ArrayList;
 
 import washbj.uw.tacoma.edu.the_reader.Data.BookDB;
 import washbj.uw.tacoma.edu.the_reader.R;
-import washbj.uw.tacoma.edu.the_reader.authentication.LoginActivity;
-
-import static android.icu.util.ULocale.getName;
 
 /**
  * The main activity to view the book's text. Also has a menu bar to log out
@@ -214,12 +196,12 @@ public class ReadActivity extends AppCompatActivity
      */
     @Override
     public void onStop() {
-//        if (mFileLocation != null) {
-//            SaveBookProgress saveTask = new SaveBookProgress();
-//            mPageNUmber = mPager.getCurrentItem();
-//            saveTask.execute(new String[]{CLOSE_BOOK});
-//            Log.i("OnStop", "" + mPageNUmber);
-//        }
+        if (mFileLocation != null) {
+            SaveBookProgress saveTask = new SaveBookProgress();
+            mPageNUmber = mPager.getCurrentItem();
+            saveTask.execute(new String[]{CLOSE_BOOK});
+            Log.i("OnStop", "" + mPageNUmber);
+        }
         super.onStop();
     }
 
@@ -228,11 +210,12 @@ public class ReadActivity extends AppCompatActivity
      */
     @Override
     public void onDestroy() {
-        // SaveBookProgress saveTask = new SaveBookProgress();
-        // saveTask.execute(new String[]{CLOSE_BOOK});
-        //Toast.makeText(this, "Saved book on page: " + mPageNUmber, Toast.LENGTH_LONG);
-        mBookDB.closeDB();
-        Log.i("OnDestroy", "" + mPageNUmber);
+        if (mBookDB != null) {
+            //Currently commented out because the flow of the application was changed
+           // mBookDB.closeDB();
+            Log.i("OnDestroy", "" + mPageNUmber);
+        }
+
         super.onDestroy();
     }
 

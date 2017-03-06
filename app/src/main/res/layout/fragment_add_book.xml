@@ -16,7 +16,7 @@
         android:layout_marginBottom="40dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
-        android:background="@drawable/ic_launcher" />
+        android:background="@drawable/parchment_gradient" />
 
     <Button
         android:text="Add New Book"
