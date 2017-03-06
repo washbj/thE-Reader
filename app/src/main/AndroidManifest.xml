@@ -21,7 +21,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".functionality.ReadActivity" />
-        <activity android:name=".authentication.NewUserActivity"></activity>
+        <activity android:name=".authentication.NewUserActivity" />
+        <activity android:name=".functionality.SettingsActivity" />
+        <activity android:name=".functionality.ShelfActivity"></activity>
     </application>
 
 </manifest>

@@ -93,16 +93,24 @@ public class ReadActivity extends AppCompatActivity
      * The pager adapter, which provides the pages to the view pager widget.
      */
     private PagerAdapter mPagerAdapter;
+
+    private SharedPreferences mShelfSharedPreferences;
+    private SharedPreferences mVisualSharedPreferences;
+
     /**
      * The SQLite database to store book info
      */
     private BookDB mBookDB;
 
+    public static final float[]  TEXT_SIZES = {14, 16, 18, 20, 22, 24, 26};
+    public static final Typeface[] TYPEFACES = {Typeface.MONOSPACE, Typeface.SERIF, Typeface.SANS_SERIF};
+
+    private float mTextSize;
+    private Typeface mTypeface;
     private float mLineSpacingMult = 1.2f;
     private float mLineSpacingExt = 14.0f;
-    private float mTextSize = 20;
-    private Typeface mTypeface = Typeface.MONOSPACE;
 
+    private int mPosition;
 
     /**
      * Array of strings to represent each page of a book
@@ -120,9 +128,14 @@ public class ReadActivity extends AppCompatActivity
     private String mFileName;
 
     /**
+     * The title of the book.
+     */
+    private String mTitle;
+
+    /**
      * The complete file path
      */
-    private String mFIleLocation;
+    private String mFileLocation;
 
 
     /**
@@ -134,7 +147,17 @@ public class ReadActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_read);
 
-        checkPermissions();
+        mPosition = getIntent().getIntExtra("position", 0);
+
+        mShelfSharedPreferences = getSharedPreferences(getString(R.string.BOOK_SHELF), Context.MODE_PRIVATE);
+
+        mFileName = mShelfSharedPreferences.getString(getString(R.string.BOOK_TAG) + mPosition + "_filename", "FILE_NAME");
+        mTitle = mShelfSharedPreferences.getString(getString(R.string.BOOK_TAG) + mPosition + "_title", "BOOK_TITLE");
+        mFileLocation = mShelfSharedPreferences.getString(getString(R.string.BOOK_TAG) + mPosition + "_location", "FILE_LOCATION");
+
+        mVisualSharedPreferences = getSharedPreferences(getString(R.string.VISUAL_PREFS), Context.MODE_PRIVATE);
+        mTextSize = TEXT_SIZES[mVisualSharedPreferences.getInt(getString(R.string.VP_TEXTSIZE) + mPosition, 0)];
+        mTypeface = TYPEFACES[mVisualSharedPreferences.getInt(getString(R.string.VP_TYPEFACE) + mPosition, 0)];
 
         mPages = new String[] {""};
 
@@ -143,118 +166,13 @@ public class ReadActivity extends AppCompatActivity
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
 
-    }
-
-    /**
-     * Creates the option menu
-     * @param menu
-     * @return always true
-     */
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.options_menu, menu);
-
-        return true;
-
-    }
-
-    /**
-     * Opens a file and sends it to the logic methods or logs the user out.
-     * @param item the menu item that was selected
-     * @return true if the operation was a success
-     */
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int iD = item.getItemId();
-        // http://stackoverflow.com/questions/16894614/android-select-a-file-from-file-explorer
-        if  (iD == R.id.open_file) {
-            Intent fileIntent = new Intent(Intent.ACTION_GET_CONTENT);
-            fileIntent.setType("*/*");
-            startActivityForResult(fileIntent, FILE_PICKED_RESULT);
-            return true;
-
-        } else if (iD == R.id.action_logout) {
-            SharedPreferences sharedPreferences =
-                    getSharedPreferences(getString(R.string.LOGIN_PREFS), Context.MODE_PRIVATE);
-            sharedPreferences.edit().putBoolean(getString(R.string.LOGGEDIN), false)
-                    .commit();
-
-            Intent i = new Intent(this, LoginActivity.class);
-            startActivity(i);
-            finish();
-            return true;
+        try {
+            readTextFromUri(Uri.parse(mFileLocation));
+        } catch (IOException e) {
+            Log.e("ReadActivity.onCreate()", "Unable to parse file location " + mFileLocation);
+            e.printStackTrace();
         }
 
-        return super.onOptionsItemSelected(item);
-
-    }
-
-    /**
-     * Checks whether the file is in standard format or a special format requiring
-     * working around the actual path. Sends either the path for normal format files
-     * or the actual book text to the ViewPageFragment. (passing book text is currently in need
-     * of optimization)
-     * @param requestCode
-     * @param resultCode
-     * @param data the file picked
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        String fullPath = "";
-        Uri uri;
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == FILE_PICKED_RESULT) {
-            if (resultCode == RESULT_OK) {
-
-                uri = data.getData();
-                String mimeType = getContentResolver().getType(uri);
-                if (mimeType == null) {
-                    fullPath = getPath(this, uri);
-                    if (fullPath == null) {
-                        mFileName = getName(uri.toString());
-                    } else {
-                        File file = new File(fullPath);
-                        mFileName = file.getName();
-                    }
-                } else {
-                    Uri returnUri = data.getData();
-                    Cursor returnCursor = getContentResolver().query(returnUri, null, null, null, null);
-                    int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
-                    returnCursor.moveToFirst();
-                    mFileName = returnCursor.getString(nameIndex);
-                    String size = Long.toString(returnCursor.getLong(sizeIndex));
-                }
-                try {
-                    mFIleLocation = URLEncoder.encode(uri.toString(), "UTF-8");
-                }catch (Exception e) {
-                    Log.e("FileLoad", e.getMessage());
-                }
-                Log.i("FileLoad:", mFileName + "         " + mFIleLocation);
-                //loadFile(uri);
-                try {
-                    readTextFromUri(Uri.parse(uri.toString()));
-                   // readTextFromUri(uri);
-                } catch (Exception e) {
-                    Log.e("FileLoad", e.getMessage());
-                }
-
-
-            }
-
-        }
-    }
-
-    /**
-     * Checks to make sure we can read and write before doing so
-     */
-    private void checkPermissions() {
-        String[] saPermissions = { Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE };
-
-        int iPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (iPermission != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, saPermissions, REQUEST_EXTERNAL_STORAGE);
-        }
     }
 
     /**
@@ -276,7 +194,7 @@ public class ReadActivity extends AppCompatActivity
         inputStream.close();
         reader.close();
         addBook();
-        bufferPages(mFileName, stringBuilder.toString());
+        bufferPages(stringBuilder.toString());
     }
 
     /**
@@ -296,12 +214,12 @@ public class ReadActivity extends AppCompatActivity
      */
     @Override
     public void onStop() {
-        if (mFIleLocation != null) {
-            SaveBookProgress saveTask = new SaveBookProgress();
-            mPageNUmber = mPager.getCurrentItem();
-            saveTask.execute(new String[]{CLOSE_BOOK});
-            Log.i("OnStop", "" + mPageNUmber);
-        }
+//        if (mFileLocation != null) {
+//            SaveBookProgress saveTask = new SaveBookProgress();
+//            mPageNUmber = mPager.getCurrentItem();
+//            saveTask.execute(new String[]{CLOSE_BOOK});
+//            Log.i("OnStop", "" + mPageNUmber);
+//        }
         super.onStop();
     }
 
@@ -310,8 +228,8 @@ public class ReadActivity extends AppCompatActivity
      */
     @Override
     public void onDestroy() {
-       // SaveBookProgress saveTask = new SaveBookProgress();
-       // saveTask.execute(new String[]{CLOSE_BOOK});
+        // SaveBookProgress saveTask = new SaveBookProgress();
+        // saveTask.execute(new String[]{CLOSE_BOOK});
         //Toast.makeText(this, "Saved book on page: " + mPageNUmber, Toast.LENGTH_LONG);
         mBookDB.closeDB();
         Log.i("OnDestroy", "" + mPageNUmber);
@@ -325,9 +243,9 @@ public class ReadActivity extends AppCompatActivity
      *
      * @param theInputText The text to convert.
      */
-    private void bufferPages(String theTitle, String theInputText) {
+    private void bufferPages(String theInputText) {
         ArrayList<String> alReturn = new ArrayList<String>();
-        alReturn.add(theTitle);
+        alReturn.add(mTitle);
 
         SpannableStringBuilder ssBuilder = new SpannableStringBuilder();
         ssBuilder.append(theInputText);
@@ -338,18 +256,21 @@ public class ReadActivity extends AppCompatActivity
         tpText.setTextSize(mTextSize);
         tpText.setTypeface(mTypeface);
 
+        float fDensity = getResources().getDisplayMetrics().density;
+
         StaticLayout layoutStatic = new StaticLayout(ssBuilder, tpText,
-                pointSize.x * 5 / 6, Layout.Alignment.ALIGN_NORMAL, mLineSpacingMult, mLineSpacingExt, false);
+                (int) (pointSize.x / fDensity), Layout.Alignment.ALIGN_NORMAL,
+                mLineSpacingMult, mLineSpacingExt, false);
 
         int iStartingLine = 0;
 
         while   (iStartingLine < layoutStatic.getLineCount()) {
             int startLineTop = layoutStatic.getLineTop(iStartingLine);
-            int endLine = layoutStatic.getLineForVertical(startLineTop + pointSize.y / 3);
+            int endLine = layoutStatic.getLineForVertical(startLineTop + (int) ((pointSize.y / fDensity)));
             int endLineBottom = layoutStatic.getLineBottom(endLine);
             int lastFullyVisibleLine;
 
-            if  (endLineBottom > startLineTop + (pointSize.y / 3)) {
+            if  (endLineBottom > startLineTop + (pointSize.y / fDensity)) {
                 lastFullyVisibleLine = endLine - 1;
             } else {
                 lastFullyVisibleLine = endLine;
@@ -377,7 +298,6 @@ public class ReadActivity extends AppCompatActivity
         }, 100);
         //mPager.setCurrentItem(mPageNUmber);
 
-
     }
 
     /**
@@ -389,27 +309,7 @@ public class ReadActivity extends AppCompatActivity
 
     }
 
-    /**
-     * If the user is currently looking at the first step, allow the system to handle the
-     * Back button. This calls finish() on this activity and pops the back stack.
-     * Otherwise, select the previous step.
-     */
-    @Override
-    public void onBackPressed() {
-        if (mPager.getCurrentItem() == 0) {
-            // If the user is currently looking at the first step, allow the system to handle the
-            // Back button. This calls finish() on this activity and pops the back stack.
-            super.onBackPressed();
-        } else {
-            // Otherwise, select the previous step.
-            mPager.setCurrentItem(mPager.getCurrentItem() - 1);
-        }
-    }
 
-    /**
-     * A simple pager adapter that represents 5 ScreenSlidePageFragment objects, in
-     * sequence.
-     */
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
         public ScreenSlidePagerAdapter(FragmentManager fm) {
             super(fm);
@@ -429,112 +329,6 @@ public class ReadActivity extends AppCompatActivity
 
     }
 
-    /**
-     * Method that looks at the file path if it is in a Android folder that renames the file.
-     * Returns the actual file name instead of something like: Doccument/555
-     * @param context current activity
-     * @param uri the file path
-     * @return the actual file name
-     */
-    public static String getPath(Context context, Uri uri) {
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
-        // DocumentProvider
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
-            // ExternalStorageProvider
-            if (isExternalStorageDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-                if ("primary".equalsIgnoreCase(type)) {
-                    return Environment.getExternalStorageDirectory() + "/" + split[1];
-                }
-                // TODO handle non-primary volumes
-            }
-            // DownloadsProvider
-            else if (isDownloadsDocument(uri)) {
-                final String id = DocumentsContract.getDocumentId(uri);
-                final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-                return getDataColumn(context, contentUri, null, null);
-            }
-            // MediaProvider
-            else
-            if (isMediaDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-                Uri contentUri = null;
-                if ("image".equals(type)) {
-                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                } else if ("video".equals(type)) {
-                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                } else if ("audio".equals(type)) {
-                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                }
-                final String selection = "_id=?";
-                final String[] selectionArgs = new String[] {split[1]};
-                return getDataColumn(context, contentUri, selection, selectionArgs);
-            }
-        }
-        // MediaStore (and general)
-        else if ("content".equalsIgnoreCase(uri.getScheme())) {
-            // Return the remote address
-            if (isGooglePhotosUri(uri))
-                return uri.getLastPathSegment();
-            return getDataColumn(context, uri, null, null);
-        }
-        // File
-        else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            return uri.getPath();
-        }
-        return null;
-    }
-
-    public static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
-        Cursor cursor = null;
-        final String column = "_data";
-        final String[] projection = { column };
-        try {
-            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                final int index = cursor.getColumnIndexOrThrow(column);
-                return cursor.getString(index);
-            }
-        } finally {
-            if (cursor != null)
-                cursor.close();
-        }
-        return null;
-    }
-
-    public static boolean isExternalStorageDocument(Uri uri) {
-        return "com.android.externalstorage.documents".equals(uri.getAuthority());
-    }
-
-/**
- * @param uri The Uri to check.
- * @return Whether the Uri authority is DownloadsProvider.
- */
-    public static boolean isDownloadsDocument(Uri uri) {
-        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
-    }
-
-/**
- * @param uri The Uri to check.
- * @return Whether the Uri authority is MediaProvider.
- */
-    public static boolean isMediaDocument(Uri uri) {
-        return "com.android.providers.media.documents".equals(uri.getAuthority());
-    }
-
-/**
- * @param uri The Uri to check.
- * @return Whether the Uri authority is Google Photos.
- */
-    public static boolean isGooglePhotosUri(Uri uri) {
-        return "com.google.android.apps.photos.content".equals(uri.getAuthority());
-    }
-
 
     /**
      * Builds the book url with the filename
@@ -548,13 +342,13 @@ public class ReadActivity extends AppCompatActivity
             sb.append("title=");
             sb.append(URLEncoder.encode(mFileName, "UTF-8"));
 
-             Log.i("ADDBOOKURL", sb.toString());
+            Log.i("ADDBOOKURL", sb.toString());
 
-             }
+        }
         catch(Exception e) {
             Toast.makeText(this,  "Cannot connect with database: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-         return sb.toString();
+        return sb.toString();
     }
 
     /**
@@ -573,18 +367,18 @@ public class ReadActivity extends AppCompatActivity
                 mBookDB = new BookDB(getApplicationContext());
 
             }
-            if (!mBookDB.CheckIsBookAlreadyInDBorNot(mFIleLocation)) {
+            if (!mBookDB.CheckIsBookAlreadyInDBorNot(mFileLocation)) {
                 mPageNUmber = 0;
-                mBookDB.insertBook(mFIleLocation, mPageNUmber, mFileName);
+                mBookDB.insertBook(mFileLocation, mPageNUmber, mFileName);
             } else {
                 if (params[0].equals(OPEN_BOOK)) {
-                    mPageNUmber = mBookDB.CheckPageNumber(mFIleLocation);
+                    mPageNUmber = mBookDB.CheckPageNumber(mFileLocation);
                 } else if ( params[0].equals(CLOSE_BOOK)) {
-                    mBookDB.updateBook(mFIleLocation, mPageNUmber, mFileName);
+                    mBookDB.updateBook(mFileLocation, mPageNUmber, mFileName);
                 }
             }
-            return "Attempting to store user info:" + mFIleLocation + " "
-            + " " + mPageNUmber + "  " + mFileName;
+            return "Attempting to store user info:" + mFileLocation + " "
+                    + " " + mPageNUmber + "  " + mFileName;
         }
     }
 
@@ -592,7 +386,7 @@ public class ReadActivity extends AppCompatActivity
     /**
      * A class to add book data to the SQL server
      */
-        private class AddBookTask extends AsyncTask<String, Void, String> {
+    private class AddBookTask extends AsyncTask<String, Void, String> {
 
 
         /**
@@ -600,11 +394,11 @@ public class ReadActivity extends AppCompatActivity
          * @param urls the url with the data and php command name
          * @return the result
          */
-            @Override
-            protected String doInBackground(String... urls) {
-                String response = "";
-                HttpURLConnection urlConnection = null;
-                for (String url : urls) {
+        @Override
+        protected String doInBackground(String... urls) {
+            String response = "";
+            HttpURLConnection urlConnection = null;
+            for (String url : urls) {
                 try {
                     URL urlObject = new URL(url);
                     urlConnection = (HttpURLConnection) urlObject.openConnection();
@@ -620,30 +414,30 @@ public class ReadActivity extends AppCompatActivity
                 } finally {
                     if (urlConnection != null)
                         urlConnection.disconnect();
-                 }
+                }
             }
             return response;
         }
-    /**
-     * It checks to see if there was a problem with the URL(Network) which is when an
-     * exception is caught. It tries to call the parse Method and checks to see if it was successful.
-     * If not, it displays the exception.
-     *
-     * @param result
-     */
+        /**
+         * It checks to see if there was a problem with the URL(Network) which is when an
+         * exception is caught. It tries to call the parse Method and checks to see if it was successful.
+         * If not, it displays the exception.
+         *
+         * @param result
+         */
         @Override
         protected void onPostExecute(String result) {
             // Something wrong with the network or the URL.
             try {
                 JSONObject jsonObject = new JSONObject(result);
-                    String status = (String) jsonObject.get("result");
-                    if (status.equals("success")) {
-                        Toast.makeText(getApplicationContext(),  "Book successfully added!" , Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Failed to add: " + jsonObject.get("error")
-                                        , Toast.LENGTH_LONG)
-                                        .show();
-                    }
+                String status = (String) jsonObject.get("result");
+                if (status.equals("success")) {
+                    Toast.makeText(getApplicationContext(),  "Book successfully added!" , Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Failed to add: " + jsonObject.get("error")
+                            , Toast.LENGTH_LONG)
+                            .show();
+                }
             } catch (JSONException e) {
                 Toast.makeText(getApplicationContext(), "Book's info already recorded", Toast.LENGTH_SHORT).show();
             }
@@ -651,5 +445,3 @@ public class ReadActivity extends AppCompatActivity
     }
 
 }
-
-

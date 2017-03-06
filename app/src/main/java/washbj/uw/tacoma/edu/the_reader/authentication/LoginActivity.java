@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import washbj.uw.tacoma.edu.the_reader.R;
-import washbj.uw.tacoma.edu.the_reader.functionality.ReadActivity;
+import washbj.uw.tacoma.edu.the_reader.functionality.ShelfActivity;
 
 /**
  * A shell activity for holding LoginFragment.
@@ -42,7 +42,7 @@ public class LoginActivity extends AppCompatActivity
                     .add(R.id.activity_login, new LoginFragment())
                     .commit();
         } else {
-            Intent i = new Intent(this, ReadActivity.class);
+            Intent i = new Intent(this, ShelfActivity.class);
             startActivity(i);
             finish();
         }

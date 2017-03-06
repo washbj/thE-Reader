@@ -3,4 +3,31 @@
 
     <string name="LOGIN_PREFS">washbj.uw.tacoma.edu.PREFS</string>
     <string name="LOGGEDIN">loggedin</string>
+
+    <string name="BOOK_SHELF">washbj.uw.tacoma.edu.BOOK_SHELF</string>
+    <string name="BOOK_SHELF_COUNT">bookshelf_count</string>
+    <string name="BOOK_TAG">bookshelf_book_</string>
+
+    <string name="VISUAL_PREFS">washbj.uw.tacoma.edu.VISUAL_PREFERENCES</string>
+    <string name="VP_TEXTSIZE">text_size</string>
+    <string name="VP_TYPEFACE">typeface</string>
+
+    <string name="testing_text">Pretty Text</string>
+
+    <string-array name="spinarray_typeface">
+        <item>Monospace</item>
+        <item>Serif</item>
+        <item>Sans-Serif</item>
+    </string-array>
+
+    <string-array name="spinarray_fontsize">
+        <item>Size 14</item>
+        <item>Size 16</item>
+        <item>Size 18</item>
+        <item>Size 20</item>
+        <item>Size 22</item>
+        <item>Size 24</item>
+        <item>Size 26</item>
+    </string-array>
+
 </resources>

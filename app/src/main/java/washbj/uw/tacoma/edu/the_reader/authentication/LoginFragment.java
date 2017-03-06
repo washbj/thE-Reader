@@ -29,7 +29,7 @@ import java.net.URL;
 import java.util.HashMap;
 
 import washbj.uw.tacoma.edu.the_reader.R;
-import washbj.uw.tacoma.edu.the_reader.functionality.ReadActivity;
+import washbj.uw.tacoma.edu.the_reader.functionality.ShelfActivity;
 
 
 /**
@@ -286,8 +286,8 @@ public class LoginFragment extends Fragment {
                         .edit()
                         .putBoolean(getString(R.string.LOGGEDIN), true)
                         .commit();
-                Intent intentRead = new Intent(getActivity(), ReadActivity.class);
-                startActivity(intentRead);
+                Intent intentShelf = new Intent(getActivity(), ShelfActivity.class);
+                startActivity(intentShelf);
                 getActivity().finish();
 
             }

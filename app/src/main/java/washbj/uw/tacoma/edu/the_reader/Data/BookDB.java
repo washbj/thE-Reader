@@ -70,14 +70,14 @@ public class BookDB {
      * @return true if the file is already stored
      */
     public boolean CheckIsBookAlreadyInDBorNot(String file_id) {
-       // try {
-            Cursor cursor = null;
-            String sql = "SELECT file_id FROM " + "Books" + " WHERE file_id=" + " +\"" + file_id + "\"";
-            cursor = mSQLiteDatabase.rawQuery(sql, null);
-            cursor.moveToFirst();
-            int count = cursor.getCount();
-            //Log.i("CursorCount", "" + count);
-            cursor.close();
+        // try {
+        Cursor cursor = null;
+        String sql = "SELECT file_id FROM " + "Books" + " WHERE file_id=" + " +\"" + file_id + "\"";
+        cursor = mSQLiteDatabase.rawQuery(sql, null);
+        cursor.moveToFirst();
+        int count = cursor.getCount();
+        //Log.i("CursorCount", "" + count);
+        cursor.close();
         if (count > 0) {
             return true;
         }

@@ -23,7 +23,6 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 
 import washbj.uw.tacoma.edu.the_reader.R;
-import washbj.uw.tacoma.edu.the_reader.functionality.ReadActivity;
 
 public class NewUserActivity extends AppCompatActivity {
     /** The URL of the database we're pulling passwords from. */

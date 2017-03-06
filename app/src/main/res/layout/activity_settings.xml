@@ -1,0 +1,81 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="washbj.uw.tacoma.edu.the_reader.functionality.ViewBookFragment"
+    android:background="@drawable/parchment_gradient">
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/edit_title"
+        android:textAppearance="@android:style/TextAppearance"
+        android:fontFamily="monospace"
+        android:typeface="monospace"
+        android:textSize="20sp"
+        android:textColor="@color/colorInk"
+        android:textAlignment="center" />
+
+    <ImageButton
+        app:srcCompat="@drawable/fancy_button_shape"
+        android:id="@+id/edit_cover"
+        android:layout_alignParentStart="true"
+        android:layout_height="300dp"
+        android:cropToPadding="false"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_marginBottom="110dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginTop="60dp"
+        android:adjustViewBounds="false"
+        android:scaleType="fitXY"
+        android:layout_width="300dp" />
+
+    <Button
+        android:text="Save Changes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/button_save_changes"
+        style="@style/fancy_button"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp" />
+
+    <Spinner
+        android:id="@+id/spinner_font_size"
+        android:layout_gravity="bottom|left"
+        android:layout_marginBottom="60dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="195dp"
+        android:layout_height="40dp"
+        android:layout_width="match_parent"
+        android:background="@drawable/fancy_button_shape"
+        android:popupBackground="@drawable/fancy_button_pressed_shape"/>
+
+    <TextView
+        android:text="@string/testing_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/text_appearance"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="110dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:textAlignment="center" />
+
+    <Spinner
+        android:id="@+id/spinner_typeface"
+        android:layout_gravity="bottom|right"
+        android:layout_marginBottom="60dp"
+        android:layout_marginLeft="195dp"
+        android:layout_marginRight="5dp"
+        android:layout_height="40dp"
+        android:background="@drawable/fancy_button"
+        android:layout_width="match_parent"
+        android:popupBackground="@drawable/fancy_button_pressed_shape" />
+
+</FrameLayout>

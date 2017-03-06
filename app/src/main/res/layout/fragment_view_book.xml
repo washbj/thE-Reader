@@ -1,0 +1,57 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="washbj.uw.tacoma.edu.the_reader.functionality.ViewBookFragment">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/book_title"
+        android:textAppearance="@android:style/TextAppearance"
+        android:fontFamily="monospace"
+        android:typeface="monospace"
+        android:textSize="20sp"
+        android:textColor="@color/colorInk"
+        android:textAlignment="center" />
+
+    <ImageView
+        app:srcCompat="@drawable/fancy_button_shape"
+        android:id="@+id/book_cover"
+        android:layout_alignParentStart="true"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:cropToPadding="false"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_marginBottom="110dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginTop="60dp" />
+
+    <Button
+        android:text="Open Book"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/button_open_book"
+        style="@style/fancy_button"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="55dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp" />
+
+    <Button
+        android:text="Settings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/button_settings"
+        style="@style/fancy_button"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp" />
+</FrameLayout>
