@@ -309,6 +309,7 @@ public class ShelfActivity extends AppCompatActivity
         spEditor.putString(getString(R.string.BOOK_TAG) + iPosition + "_title", theName);
         spEditor.putString(getString(R.string.BOOK_TAG) + iPosition + "_filename", theName);
         spEditor.putString(getString(R.string.BOOK_TAG) + iPosition + "_location", theLocation);
+        spEditor.putString(getString(R.string.BOOK_TAG) + iPosition + "_imagepath", "NO_IMAGE_PATH");
         spEditor.putInt(getString(R.string.BOOK_SHELF_COUNT), iPosition + 1);
         spEditor.commit();
 
