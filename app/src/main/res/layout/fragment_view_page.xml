@@ -1,4 +1,4 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_view_page"
     android:layout_width="match_parent"
@@ -11,5 +11,16 @@
         android:lineSpacingMultiplier="1.2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="" />
-</ScrollView>
+        android:layout_marginBottom="30dp" />
+
+    <TextView style="?android:textAppearanceMedium"
+        android:id="@+id/page_number"
+        android:padding="4dp"
+        android:lineSpacingMultiplier="1.2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_gravity="bottom"
+        android:textAlignment="center" />
+
+</FrameLayout>

@@ -18,6 +18,8 @@ import android.text.SpannableStringBuilder;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.Log;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -50,6 +52,9 @@ public class ReadActivity extends AppCompatActivity
      * The int to represent a request on external storage
      */
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
+
+
+    private String[] test = {"Testificate 1", "Testificate 2", "Testificate 3"};
 
     /**
      * The url of the book add php code
@@ -86,9 +91,10 @@ public class ReadActivity extends AppCompatActivity
 
     public static final float[]  TEXT_SIZES = {14, 16, 18, 20, 22, 24, 26};
     public static final Typeface[] TYPEFACES = {Typeface.MONOSPACE, Typeface.SERIF, Typeface.SANS_SERIF};
+    public static final int[] BACKGROUNDS = {R.drawable.parchment_gradient, R.drawable.paper_gradient, R.drawable.gold_gradient};
 
     private float mTextSize;
-    private Typeface mTypeface;
+    private int mTypeface;
     private float mLineSpacingMult = 1.2f;
     private float mLineSpacingExt = 14.0f;
 
@@ -120,6 +126,9 @@ public class ReadActivity extends AppCompatActivity
     private String mFileLocation;
 
 
+    private int mBackground;
+
+
     /**
      * Creates the Activity and sets up the fragment
      * @param savedInstanceState
@@ -139,14 +148,14 @@ public class ReadActivity extends AppCompatActivity
 
         mVisualSharedPreferences = getSharedPreferences(getString(R.string.VISUAL_PREFS), Context.MODE_PRIVATE);
         mTextSize = TEXT_SIZES[mVisualSharedPreferences.getInt(getString(R.string.VP_TEXTSIZE) + mPosition, 0)];
-        mTypeface = TYPEFACES[mVisualSharedPreferences.getInt(getString(R.string.VP_TYPEFACE) + mPosition, 0)];
+        mTypeface = mVisualSharedPreferences.getInt(getString(R.string.VP_TYPEFACE) + mPosition, 0);
 
-        mPages = new String[] {""};
+        mBackground = BACKGROUNDS[mVisualSharedPreferences.getInt(getString(R.string.VP_BACKGROUND) + mPosition, 0)];
+        RelativeLayout layout = (RelativeLayout) findViewById(R.id.activity_read);
+        layout.setBackgroundResource(mBackground);
 
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = (ViewPager) findViewById(R.id.page_viewer);
-        mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
-        mPager.setAdapter(mPagerAdapter);
 
         try {
             readTextFromUri(Uri.parse(mFileLocation));
@@ -176,7 +185,8 @@ public class ReadActivity extends AppCompatActivity
         inputStream.close();
         reader.close();
         addBook();
-        bufferPages(stringBuilder.toString());
+        BufferPagesTask bufferPages = new BufferPagesTask();
+        bufferPages.execute(stringBuilder.toString());
     }
 
     /**
@@ -226,9 +236,8 @@ public class ReadActivity extends AppCompatActivity
      *
      * @param theInputText The text to convert.
      */
-    private void bufferPages(String theInputText) {
+    private String[] bufferPages(String theInputText) {
         ArrayList<String> alReturn = new ArrayList<String>();
-        alReturn.add(mTitle);
 
         SpannableStringBuilder ssBuilder = new SpannableStringBuilder();
         ssBuilder.append(theInputText);
@@ -237,7 +246,7 @@ public class ReadActivity extends AppCompatActivity
 
         TextPaint tpText = new TextPaint();
         tpText.setTextSize(mTextSize);
-        tpText.setTypeface(mTypeface);
+        tpText.setTypeface(TYPEFACES[mTypeface]);
 
         float fDensity = getResources().getDisplayMetrics().density;
 
@@ -249,11 +258,11 @@ public class ReadActivity extends AppCompatActivity
 
         while   (iStartingLine < layoutStatic.getLineCount()) {
             int startLineTop = layoutStatic.getLineTop(iStartingLine);
-            int endLine = layoutStatic.getLineForVertical(startLineTop + (int) ((pointSize.y / fDensity)));
+            int endLine = layoutStatic.getLineForVertical(startLineTop + (int) (((pointSize.y * 7 / 8) / fDensity)));
             int endLineBottom = layoutStatic.getLineBottom(endLine);
             int lastFullyVisibleLine;
 
-            if  (endLineBottom > startLineTop + (pointSize.y / fDensity)) {
+            if  (endLineBottom > startLineTop + ((pointSize.y * 7 / 8) / fDensity)) {
                 lastFullyVisibleLine = endLine - 1;
             } else {
                 lastFullyVisibleLine = endLine;
@@ -266,20 +275,7 @@ public class ReadActivity extends AppCompatActivity
 
         }
 
-        mPages = alReturn.toArray(new String[alReturn.size()]);
-        mPagerAdapter.notifyDataSetChanged();
-        mPager.setAdapter(mPagerAdapter);
-
-        mPager.postDelayed(new Runnable() {
-
-            //Requires delay so that the page fragment can be built first
-            @Override
-            public void run() {
-                Log.i("CUrrentPageToBEOPened", "" + mPageNUmber);
-                mPager.setCurrentItem(mPageNUmber);
-            }
-        }, 100);
-        //mPager.setCurrentItem(mPageNUmber);
+        return alReturn.toArray(new String[alReturn.size()]);
 
     }
 
@@ -300,9 +296,20 @@ public class ReadActivity extends AppCompatActivity
 
         @Override
         public Fragment getItem(int position) {
-            ViewPageFragment page = ViewPageFragment.newInstance(mPages[position], mTextSize, mTypeface);
+            Log.d("ScreenSlidePagerAdapter", " --- Position = " + position);
+            Log.d("ScreenSlidePagerAdapter", " --- Text = " + mPages[position]);
+            Log.d("CurrentPagetobeOpened", "" + mPageNUmber);
+
+            ViewPageFragment page = new ViewPageFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("text", mPages[position]);
+            bundle.putFloat("text_size", mTextSize);
+            bundle.putInt("typeface", mTypeface);
+            bundle.putInt("page_num", position + 1);
+            page.setArguments(bundle);
 
             return page;
+
         }
 
         @Override
@@ -371,7 +378,6 @@ public class ReadActivity extends AppCompatActivity
      */
     private class AddBookTask extends AsyncTask<String, Void, String> {
 
-
         /**
          * Attempts to add the data to the server with the given url
          * @param urls the url with the data and php command name
@@ -401,6 +407,7 @@ public class ReadActivity extends AppCompatActivity
             }
             return response;
         }
+
         /**
          * It checks to see if there was a problem with the URL(Network) which is when an
          * exception is caught. It tries to call the parse Method and checks to see if it was successful.
@@ -424,6 +431,40 @@ public class ReadActivity extends AppCompatActivity
             } catch (JSONException e) {
                 Toast.makeText(getApplicationContext(), "Book's info already recorded", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+
+    private class BufferPagesTask extends AsyncTask<String, Void, String> {
+        String[] pageBuffer;
+
+        @Override
+        protected String doInBackground(String... urls) {
+            for (String inputText : urls) {
+                pageBuffer = bufferPages(inputText);
+            }
+            return "";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mPages = pageBuffer;
+
+            mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+            mPager.setAdapter(mPagerAdapter);
+            mPager.setCurrentItem(mPageNUmber);
+
+//            mPager.postDelayed(new Runnable() {
+//
+//                //Requires delay so that the page fragment can be built first
+//                @Override
+//                public void run() {
+//                    Log.i("CurrentPagetobeOpened", "" + mPageNUmber);
+//                    mPager.setCurrentItem(mPageNUmber);
+//                }
+//            }, 100);
+//            mPager.setCurrentItem(mPageNUmber);
+
         }
     }
 

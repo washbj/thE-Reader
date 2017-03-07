@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/activity_settings"
     tools:context="washbj.uw.tacoma.edu.the_reader.functionality.ViewBookFragment"
     android:background="@drawable/parchment_gradient">
 
@@ -21,16 +22,16 @@
         app:srcCompat="@drawable/fancy_button_shape"
         android:id="@+id/edit_cover"
         android:layout_alignParentStart="true"
-        android:layout_height="300dp"
         android:cropToPadding="false"
         android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_marginBottom="110dp"
+        android:layout_marginBottom="130dp"
         android:layout_marginLeft="40dp"
         android:layout_marginRight="40dp"
         android:layout_marginTop="60dp"
         android:adjustViewBounds="false"
         android:scaleType="fitXY"
-        android:layout_width="300dp" />
+        android:layout_width="250dp"
+        android:layout_height="250dp" />
 
     <Button
         android:text="Save Changes"
@@ -76,6 +77,17 @@
         android:layout_height="40dp"
         android:background="@drawable/fancy_button"
         android:layout_width="match_parent"
+        android:popupBackground="@drawable/fancy_button_pressed_shape" />
+
+    <Spinner
+        android:id="@+id/spinner_background"
+        android:layout_gravity="bottom|center"
+        android:layout_marginBottom="160dp"
+        android:layout_marginLeft="80dp"
+        android:layout_marginRight="80dp"
+        android:layout_height="40dp"
+        android:layout_width="match_parent"
+        android:background="@drawable/fancy_button_shape"
         android:popupBackground="@drawable/fancy_button_pressed_shape" />
 
 </FrameLayout>

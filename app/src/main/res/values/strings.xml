@@ -11,6 +11,7 @@
     <string name="VISUAL_PREFS">washbj.uw.tacoma.edu.VISUAL_PREFERENCES</string>
     <string name="VP_TEXTSIZE">text_size</string>
     <string name="VP_TYPEFACE">typeface</string>
+    <string name="VP_BACKGROUND">background</string>
 
     <string name="testing_text">Pretty Text</string>
 
@@ -28,6 +29,12 @@
         <item>Size 22</item>
         <item>Size 24</item>
         <item>Size 26</item>
+    </string-array>
+
+    <string-array name="spinarray_background">
+        <item>Parchment</item>
+        <item>Paper</item>
+        <item>Gold</item>
     </string-array>
 
 </resources>

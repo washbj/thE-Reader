@@ -17,7 +17,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,6 +51,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     int mTextFontSize;
     int mTextTypeface;
+    int mBackground;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +90,10 @@ public class SettingsActivity extends AppCompatActivity {
         mTestText = (TextView) findViewById(R.id.text_appearance);
         mTextFontSize = mVisualSharedPreferences.getInt(getString(R.string.VP_TEXTSIZE) + mPosition, 0);
         mTextTypeface = mVisualSharedPreferences.getInt(getString(R.string.VP_TYPEFACE) + mPosition, 0);
+        mBackground = mVisualSharedPreferences.getInt(getString(R.string.VP_BACKGROUND) + mPosition, 0);
         updateText();
+        final FrameLayout layout = (FrameLayout) findViewById(R.id.activity_settings);
+        layout.setBackgroundResource(ReadActivity.BACKGROUNDS[mBackground]);
 
         mSpinnerFontSize = (Spinner) findViewById(R.id.spinner_font_size);
         mSpinnerFontSize.setAdapter(ArrayAdapter.createFromResource(this, R.array.spinarray_fontsize,
@@ -111,13 +117,32 @@ public class SettingsActivity extends AppCompatActivity {
 
         mSpinnerTypeface = (Spinner) findViewById(R.id.spinner_typeface);
         mSpinnerTypeface.setAdapter(ArrayAdapter.createFromResource(this, R.array.spinarray_typeface,
-                                    R.layout.spinner_item));
+                R.layout.spinner_item));
         mSpinnerTypeface.setSelection(mTextTypeface);
         mSpinnerTypeface.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mTextTypeface = position;
                 updateText();
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+
+        });
+
+        mSpinnerTypeface = (Spinner) findViewById(R.id.spinner_background);
+        mSpinnerTypeface.setAdapter(ArrayAdapter.createFromResource(this, R.array.spinarray_background,
+                R.layout.spinner_item));
+        mSpinnerTypeface.setSelection(mBackground);
+        mSpinnerTypeface.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mBackground = position;
+                layout.setBackgroundResource(ReadActivity.BACKGROUNDS[mBackground]);
 
             }
 
@@ -146,9 +171,10 @@ public class SettingsActivity extends AppCompatActivity {
         spEditor = mVisualSharedPreferences.edit();
         spEditor.putInt(getString(R.string.VP_TEXTSIZE) + mPosition, mTextFontSize);
         spEditor.putInt(getString(R.string.VP_TYPEFACE) + mPosition, mTextTypeface);
+        spEditor.putInt(getString(R.string.VP_BACKGROUND) + mPosition, mBackground);
         spEditor.commit();
 
-        Toast.makeText(this, "Book added!", Toast.LENGTH_SHORT);
+        Toast.makeText(this, "Settings updated!", Toast.LENGTH_SHORT);
 
     }
 

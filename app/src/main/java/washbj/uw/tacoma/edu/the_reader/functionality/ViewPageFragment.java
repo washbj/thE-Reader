@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import washbj.uw.tacoma.edu.the_reader.R;
@@ -22,18 +23,20 @@ import washbj.uw.tacoma.edu.the_reader.R;
  */
 public class ViewPageFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
-
     /** The text to display. */
-    static String mText = "";
+    String mText;
 
     /** The desired size of the text. */
-    static float mTextSize;
+    float mTextSize;
 
     /** The desired typeface of the text. */
-    static Typeface mTypeface;
+    Typeface mTypeface;
 
     /** The TextView used to print pages to the screen. */
-    TextView mTextView;
+    TextView mPageText;
+
+    /** The TextView used to print pages to the screen. */
+    TextView mPageNumber;
 
     public ViewPageFragment() {
         // Required empty public constructor
@@ -45,10 +48,7 @@ public class ViewPageFragment extends Fragment {
      *
      * @return A new instance of fragment ViewPageFragment.
      */
-    public static ViewPageFragment newInstance(String thePage, float theTextSize, Typeface theTypeface) {
-        mText = thePage;
-        mTextSize = theTextSize;
-        mTypeface = theTypeface;
+    public static ViewPageFragment newInstance() {
         ViewPageFragment fragment = new ViewPageFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
@@ -66,10 +66,28 @@ public class ViewPageFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_view_page, container, false);
 
-        mTextView = (TextView) view.findViewById(R.id.page_text);
-        mTextView.setTextSize(mTextSize);
-        mTextView.setTypeface(mTypeface);
-        mTextView.setText(mText);
+        mText = "ERROR: NO BUNDLE FOUND";
+        mTextSize = 16.0f;
+        mTypeface = Typeface.MONOSPACE;
+        int iPageNumber = 0;
+
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            mText = bundle.getString("text", "Loading...");
+            mTextSize = bundle.getFloat("text_size", 16.0f);
+            mTypeface = ReadActivity.TYPEFACES[bundle.getInt("typeface", 0)];
+            iPageNumber = bundle.getInt("page_num", 1);
+        }
+
+        mPageText = (TextView) view.findViewById(R.id.page_text);
+        mPageText.setTextSize(mTextSize);
+        mPageText.setTypeface(mTypeface);
+        mPageText.setText(mText);
+
+        mPageNumber = (TextView) view.findViewById(R.id.page_number);
+        mPageNumber.setTextSize(mTextSize);
+        mPageNumber.setTypeface(mTypeface);
+        mPageNumber.setText("" + iPageNumber);
 
         return view;
 
