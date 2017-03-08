@@ -1,6 +1,7 @@
 package washbj.uw.tacoma.edu.the_reader.functionality;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.graphics.Typeface;
@@ -18,7 +19,9 @@ import android.text.SpannableStringBuilder;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.Log;
-import android.widget.FrameLayout;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -166,6 +169,45 @@ public class ReadActivity extends AppCompatActivity
 
     }
 
+
+    /**
+     * Creates the option menu
+     * @param menu
+     * @return always true
+     */
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu_read_activity, menu);
+
+        return true;
+
+    }
+
+    /**
+     * Shares the current page's text to an e-mail app similar to ripping
+     * a page out of a book.
+     * @param item the menu item that was selected
+     * @return true if the operation was a success
+     */
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int iD = item.getItemId();
+        // http://stackoverflow.com/questions/16894614/android-select-a-file-from-file-explorer
+        if  (iD == R.id.share_page) {
+            String shareBody = mPages[mPager.getCurrentItem()];
+            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+            sharingIntent.setType("text/plain");
+            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "A page from " + mTitle);
+            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+            startActivity(Intent.createChooser(sharingIntent, "Share your page using:"));
+            return true;
+
+        }
+        return super.onOptionsItemSelected(item);
+
+    }
+
+
+
     /**
      * Gets the text from the chosen file and passes it to the book builder.
      * Also adds the book name to the database
@@ -197,6 +239,8 @@ public class ReadActivity extends AppCompatActivity
         SaveBookProgress saveTask = new SaveBookProgress();
         saveTask.execute(new String[]{OPEN_BOOK});
         task.execute(new String[]{buildBookUrl()});
+
+        setTitle(mTitle);
     }
 
 

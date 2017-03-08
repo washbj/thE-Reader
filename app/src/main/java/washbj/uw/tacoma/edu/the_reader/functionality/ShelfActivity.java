@@ -28,7 +28,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.io.File;
-import java.net.URI;
 import java.net.URLEncoder;
 
 import washbj.uw.tacoma.edu.the_reader.R;
@@ -120,6 +119,8 @@ public class ShelfActivity extends AppCompatActivity
         if (iPermission != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, saPermissions, REQUEST_EXTERNAL_STORAGE);
         }
+
+
     }
 
 
@@ -137,7 +138,7 @@ public class ShelfActivity extends AppCompatActivity
     }
 
     /**
-     * Opens a file and sends it to the logic methods or logs the user out.
+     * Clears the list of books or logs the user out.
      * @param item the menu item that was selected
      * @return true if the operation was a success
      */
