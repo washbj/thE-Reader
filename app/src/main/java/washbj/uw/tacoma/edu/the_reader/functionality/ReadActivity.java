@@ -1,3 +1,10 @@
+/*
+ * Justin Washburn and Michael Scott
+ *  TCSS 450
+ *  Swellest Reader version 1
+ *
+ *
+ */
 package washbj.uw.tacoma.edu.the_reader.functionality;
 
 import android.content.Context;
@@ -57,7 +64,7 @@ public class ReadActivity extends AppCompatActivity
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
 
 
-    private String[] test = {"Testificate 1", "Testificate 2", "Testificate 3"};
+
 
     /**
      * The url of the book add php code
@@ -92,15 +99,39 @@ public class ReadActivity extends AppCompatActivity
      */
     private BookDB mBookDB;
 
+    /**
+     * Sizes of text options
+     */
     public static final float[]  TEXT_SIZES = {14, 16, 18, 20, 22, 24, 26};
+    /**
+     * Types of font
+     */
     public static final Typeface[] TYPEFACES = {Typeface.MONOSPACE, Typeface.SERIF, Typeface.SANS_SERIF};
+    /**
+     * Types of parchment
+     */
     public static final int[] BACKGROUNDS = {R.drawable.parchment_gradient, R.drawable.paper_gradient, R.drawable.gold_gradient};
 
+    /**
+     * Current text size
+     */
     private float mTextSize;
+    /**
+     * Current font or typeface
+     */
     private int mTypeface;
+    /**
+     * Spacing between lines
+     */
     private float mLineSpacingMult = 1.2f;
+    /**
+     * More info for line spacing
+     */
     private float mLineSpacingExt = 14.0f;
 
+    /**
+     * The current position of the book on the shelf
+     */
     private int mPosition;
 
     /**
@@ -128,12 +159,14 @@ public class ReadActivity extends AppCompatActivity
      */
     private String mFileLocation;
 
-
+    /**
+     * The int representation of the background image
+     */
     private int mBackground;
 
 
     /**
-     * Creates the Activity and sets up the fragment
+     * Creates the Activity, sets up the fragment, and loads in data
      * @param savedInstanceState
      */
     @Override
@@ -232,7 +265,7 @@ public class ReadActivity extends AppCompatActivity
     }
 
     /**
-     * Adds the book info to the SQL server
+     * Helper method to add the book info to the SQL server and the SQLite server
      */
     public void addBook() {
         AddBookTask task = new AddBookTask();
@@ -257,20 +290,6 @@ public class ReadActivity extends AppCompatActivity
             Log.i("OnStop", "" + mPageNUmber);
         }
         super.onStop();
-    }
-
-    /**
-     * Closes the database when destroyed.
-     */
-    @Override
-    public void onDestroy() {
-        if (mBookDB != null) {
-            //Currently commented out because the flow of the application was changed
-           // mBookDB.closeDB();
-            Log.i("OnDestroy", "" + mPageNUmber);
-        }
-
-        super.onDestroy();
     }
 
 
@@ -332,12 +351,23 @@ public class ReadActivity extends AppCompatActivity
 
     }
 
-
+    /**
+     * Class that holds each view page fragment
+     */
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+        /**
+         * Default constructor
+         * @param fm the Fragment Manager
+         */
         public ScreenSlidePagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
+        /**
+         * Gets the desired page of the book
+         * @param position the int of that page
+         * @return the page fragment  for that page
+         */
         @Override
         public Fragment getItem(int position) {
             Log.d("ScreenSlidePagerAdapter", " --- Position = " + position);
@@ -356,6 +386,10 @@ public class ReadActivity extends AppCompatActivity
 
         }
 
+        /**
+         * Gets the total number of pages
+         * @return total number of pages
+         */
         @Override
         public int getCount() {
             return mPages.length;
@@ -478,10 +512,17 @@ public class ReadActivity extends AppCompatActivity
         }
     }
 
-
+    /**
+     * Asynctask to buffer the pages of the txt file into the book
+     */
     private class BufferPagesTask extends AsyncTask<String, Void, String> {
         String[] pageBuffer;
 
+        /**
+         * Adds the file to the buffer
+         * @param urls
+         * @return
+         */
         @Override
         protected String doInBackground(String... urls) {
             for (String inputText : urls) {
@@ -490,6 +531,10 @@ public class ReadActivity extends AppCompatActivity
             return "";
         }
 
+        /**
+         * Sets the pager to the buffer and gets the page fragment ready
+         * @param result
+         */
         @Override
         protected void onPostExecute(String result) {
             mPages = pageBuffer;
@@ -497,17 +542,6 @@ public class ReadActivity extends AppCompatActivity
             mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
             mPager.setAdapter(mPagerAdapter);
             mPager.setCurrentItem(mPageNUmber);
-
-//            mPager.postDelayed(new Runnable() {
-//
-//                //Requires delay so that the page fragment can be built first
-//                @Override
-//                public void run() {
-//                    Log.i("CurrentPagetobeOpened", "" + mPageNUmber);
-//                    mPager.setCurrentItem(mPageNUmber);
-//                }
-//            }, 100);
-//            mPager.setCurrentItem(mPageNUmber);
 
         }
     }

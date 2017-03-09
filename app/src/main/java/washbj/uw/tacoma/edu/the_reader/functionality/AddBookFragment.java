@@ -1,6 +1,15 @@
+/*
+ * Justin Washburn and Michael Scott
+ *  TCSS 450
+ *  Swellest Reader version 1
+ *
+ *
+ */
+
 package washbj.uw.tacoma.edu.the_reader.functionality;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -17,6 +26,9 @@ import washbj.uw.tacoma.edu.the_reader.R;
  * selectFile() method, so they can add new books to the system.
  */
 public class AddBookFragment extends Fragment {
+    /**
+     * Fragment listener
+     */
     private OnFragmentInteractionListener mListener;
 
     /**
@@ -41,6 +53,9 @@ public class AddBookFragment extends Fragment {
         return fragment;
     }
 
+
+     // General onCreateView method
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -59,6 +74,7 @@ public class AddBookFragment extends Fragment {
 
     }
 
+  //General onAttach
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -70,6 +86,7 @@ public class AddBookFragment extends Fragment {
         }
     }
 
+    // General onDetach
     @Override
     public void onDetach() {
         super.onDetach();

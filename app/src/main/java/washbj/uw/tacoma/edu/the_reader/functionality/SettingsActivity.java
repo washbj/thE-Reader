@@ -232,6 +232,7 @@ public class SettingsActivity extends AppCompatActivity {
                 try {
                     mEditCover.setImageURI(uri);
                     mImagePath = uri.toString();
+                    Log.i("ImageLoad", mImagePath);
                 } catch (Exception e) {
                     Log.e("FileLoad", e.getMessage());
 
