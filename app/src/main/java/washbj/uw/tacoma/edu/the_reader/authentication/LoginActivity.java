@@ -6,19 +6,9 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import washbj.uw.tacoma.edu.the_reader.R;
 import washbj.uw.tacoma.edu.the_reader.functionality.ShelfActivity;
@@ -28,8 +18,17 @@ import washbj.uw.tacoma.edu.the_reader.functionality.ShelfActivity;
  */
 public class LoginActivity extends AppCompatActivity
         implements LoginFragment.LoginInteractionListener {
+
+    /** The SharedPreferences dedicated to holding login information. */
     private SharedPreferences mSharedPreferences;
 
+    /**
+     * Checks if the user is logged in. If so, pass them straight on through
+     * to the Shelf Activity. Also checks to ensure the app can connect to
+     * the database.
+     *
+     * {@inheritDoc}
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

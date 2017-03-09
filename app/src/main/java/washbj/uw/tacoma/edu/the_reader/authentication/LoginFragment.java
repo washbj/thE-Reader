@@ -80,14 +80,12 @@ public class LoginFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            // Arguments pending
-        }
 
         mSharedPreferences = getActivity().getSharedPreferences(getString(R.string.LOGIN_PREFS)
                 , Context.MODE_PRIVATE);
 
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -99,6 +97,7 @@ public class LoginFragment extends Fragment {
         final EditText fieldPassword = (EditText) view.findViewById(R.id.enter_password);
         Button buttonLogin = (Button) view.findViewById(R.id.button_login);
 
+        // Verifies that the login info is valid.
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -136,6 +135,7 @@ public class LoginFragment extends Fragment {
         });
 
 
+        // Add a new user?
         Button buttonNewUser = (Button) view.findViewById(R.id.button_new_user);
         buttonNewUser.setOnClickListener(new View.OnClickListener() {
             @Override
