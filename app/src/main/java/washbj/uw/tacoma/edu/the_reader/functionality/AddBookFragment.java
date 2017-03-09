@@ -1,7 +1,14 @@
+/*
+ * Justin Washburn and Michael Scott
+ *  TCSS 450
+ *  Swellest Reader version 1
+ *
+ *
+ */
+
 package washbj.uw.tacoma.edu.the_reader.functionality;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,16 +20,17 @@ import android.widget.Button;
 import washbj.uw.tacoma.edu.the_reader.R;
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link AddBookFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link AddBookFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Fragment to add a book
  */
 public class AddBookFragment extends Fragment {
+    /**
+     * Fragment listener
+     */
     private OnFragmentInteractionListener mListener;
 
+    /**
+     * Button for adding a book
+     */
     private Button mButton;
 
     public AddBookFragment() {
@@ -42,6 +50,9 @@ public class AddBookFragment extends Fragment {
         return fragment;
     }
 
+
+     // General onCreateView method
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -60,6 +71,7 @@ public class AddBookFragment extends Fragment {
 
     }
 
+  //General onAttach
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -71,6 +83,7 @@ public class AddBookFragment extends Fragment {
         }
     }
 
+    // General onDetach
     @Override
     public void onDetach() {
         super.onDetach();
