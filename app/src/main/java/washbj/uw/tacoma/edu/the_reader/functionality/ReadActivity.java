@@ -2,8 +2,6 @@
  * Justin Washburn and Michael Scott
  *  TCSS 450
  *  Swellest Reader version 1
- *
- *
  */
 package washbj.uw.tacoma.edu.the_reader.functionality;
 

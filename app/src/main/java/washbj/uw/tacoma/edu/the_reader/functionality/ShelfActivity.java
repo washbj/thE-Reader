@@ -1,3 +1,11 @@
+/*
+ * Justin Washburn and Michael Scott
+ *  TCSS 450
+ *  Swellest Reader version 1
+ *
+ *
+ */
+
 package washbj.uw.tacoma.edu.the_reader.functionality;
 
 import android.Manifest;
@@ -74,6 +82,9 @@ public class ShelfActivity extends AppCompatActivity
      */
     private PagerAdapter mPagerAdapter;
 
+    /**
+     * Shared preferences for the shelf books
+     */
     private SharedPreferences mShelfSharedPreferences;
 
     /**
@@ -165,7 +176,9 @@ public class ShelfActivity extends AppCompatActivity
 
     }
 
-
+    /**
+     * Selects a file and starts the file choser activity
+     */
     public void selectFile() {
         Intent fileIntent = new Intent(Intent.ACTION_GET_CONTENT);
         fileIntent.setType("*/*");
@@ -190,22 +203,36 @@ public class ShelfActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Updates to a new page on the bookshelf
+     */
     public void updatePageView() {
         mPagerAdapter.notifyDataSetChanged();
         mPager.setAdapter(mPagerAdapter);
     }
 
+    /**
+     * Opens the settings view
+     */
     public void openSettings() {
         Intent intentSettings = new Intent(this, SettingsActivity.class);
         intentSettings.putExtra("position", mPager.getCurrentItem());
         startActivityForResult(intentSettings, ShelfActivity.SETTINGS_UPDATED_RESULT);
     }
 
+    /**
+     * Holds all of the book fragments on the shelf
+     */
     private class BookPagerAdapter extends FragmentStatePagerAdapter {
         public BookPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
+        /**
+         * Gets a book fragment for aparticular spot on the shelf
+         * @param position the position on the shelf
+         * @return the book fragment
+         */
         @Override
         public Fragment getItem(int position) {
             int iLength = mShelfSharedPreferences.getInt(getString(R.string.BOOK_SHELF_COUNT), 0);
@@ -225,6 +252,10 @@ public class ShelfActivity extends AppCompatActivity
 
         }
 
+        /**
+         * Gets the size of the bookshelf
+         * @return Size of bookshelf
+         */
         @Override
         public int getCount() {
             return mShelfSharedPreferences.getInt(getString(R.string.BOOK_SHELF_COUNT), 0) + 1;
@@ -232,7 +263,12 @@ public class ShelfActivity extends AppCompatActivity
 
     }
 
-
+    /**
+     * Gets the file path from the file
+     * @param requestCode Type of request
+     * @param resultCode Whether attempt was succesful
+     * @param data the file data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         String fullPath = "";
@@ -285,6 +321,9 @@ public class ShelfActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Clears the bookshel of all books
+     */
     private void clearShelf() {
         SharedPreferences.Editor spEditor = mShelfSharedPreferences.edit();
         spEditor.putInt(getString(R.string.BOOK_SHELF_COUNT), 0);
@@ -304,6 +343,11 @@ public class ShelfActivity extends AppCompatActivity
 
     }
 
+    /**
+     * Adds a book to the bookshelf
+     * @param theName name of the book
+     * @param theLocation file location of book
+     */
     private void addBook(String theName, String theLocation) {
         int iPosition = mShelfSharedPreferences.getInt(getString(R.string.BOOK_SHELF_COUNT), 0);
         SharedPreferences.Editor spEditor = mShelfSharedPreferences.edit();
@@ -390,7 +434,14 @@ public class ShelfActivity extends AppCompatActivity
         return null;
     }
 
-
+    /**
+     * Gets file info to ultimately get the file name
+     * @param context current context
+     * @param uri file uri
+     * @param selection selection for cursor
+     * @param selectionArgs arguments to search the uri for
+     * @return the file name
+     */
     public static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
         Cursor cursor = null;
         final String column = "_data";
@@ -408,7 +459,10 @@ public class ShelfActivity extends AppCompatActivity
         return null;
     }
 
-
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is External Storage
+     */
     public static boolean isExternalStorageDocument(Uri uri) {
         return "com.android.externalstorage.documents".equals(uri.getAuthority());
     }

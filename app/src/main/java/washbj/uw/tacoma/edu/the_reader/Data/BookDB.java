@@ -1,3 +1,9 @@
+
+/*
+ * Justin Washburn and Michael Scott
+ *  TCSS 450
+ *  Swellest Reader version 1
+ */
 package washbj.uw.tacoma.edu.the_reader.Data;
 
 import android.content.ContentValues;
@@ -10,7 +16,7 @@ import android.util.Log;
 import washbj.uw.tacoma.edu.the_reader.R;
 
 /**
- * Created by Justin of America on 2/28/2017.
+ * Database class to contain SQLite book info
  */
 
 public class BookDB {
@@ -18,11 +24,11 @@ public class BookDB {
     /**
      * Version of the database
      */
-    public static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 4;
     /**
      * Name of the database
      */
-    public static final String DB_NAME = "Books.db";
+    private static final String DB_NAME = "Books.db";
     /**
      * Name of the table
      */
@@ -71,17 +77,16 @@ public class BookDB {
      */
     public boolean CheckIsBookAlreadyInDBorNot(String file_id) {
         // try {
-        Cursor cursor = null;
+        Cursor cursor;
         String sql = "SELECT file_id FROM " + "Books" + " WHERE file_id=" + " +\"" + file_id + "\"";
         cursor = mSQLiteDatabase.rawQuery(sql, null);
         cursor.moveToFirst();
         int count = cursor.getCount();
         //Log.i("CursorCount", "" + count);
         cursor.close();
-        if (count > 0) {
-            return true;
-        }
-        return false;
+        return (count > 0);
+
+
 
     }
 
@@ -92,7 +97,7 @@ public class BookDB {
      */
     public int CheckPageNumber(String file_id) {
         // try {
-        Cursor cursor = null;
+        Cursor cursor;
         String sql = "SELECT page FROM " + "Books" + " WHERE file_id=" + " +\"" + file_id + "\"";
         cursor = mSQLiteDatabase.rawQuery(sql, null);
         cursor.moveToFirst();
@@ -152,10 +157,10 @@ public class BookDB {
 
         /**
          * Creates the helper and initializes the SQL code with the strings from values
-         * @param context
-         * @param name
-         * @param factory
-         * @param version
+         * @param context current context
+         * @param name Databse name
+         * @param factory null
+         * @param version Version of database
          */
         public BookDBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
             super(context, name, factory, version);
@@ -166,7 +171,7 @@ public class BookDB {
 
         /**
          * Creates the SQL table
-         * @param sqLiteDatabase
+         * @param sqLiteDatabase the sqlLite database
          */
         @Override
         public void onCreate(SQLiteDatabase sqLiteDatabase) {
@@ -175,9 +180,9 @@ public class BookDB {
 
         /**
          * Creates the SQL table and deletes the current
-         * @param sqLiteDatabase
-         * @param i
-         * @param i1
+         * @param sqLiteDatabase the sqlLite database
+         * @param i old version
+         * @param i1 new version
          */
         @Override
         public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
