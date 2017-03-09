@@ -27,6 +27,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import washbj.uw.tacoma.edu.the_reader.R;
 import washbj.uw.tacoma.edu.the_reader.functionality.ShelfActivity;
@@ -104,12 +106,12 @@ public class LoginFragment extends Fragment {
                 mUsername = fieldUsername.getText().toString();
                 mPassword = fieldPassword.getText().toString();
 
-                if (TextUtils.isEmpty(mUsername)) {
+                if (mUsername.equals("")) {
                     Toast.makeText(v.getContext(), "Enter a Username!"
                             , Toast.LENGTH_SHORT)
                             .show();
                     fieldUsername.requestFocus();
-                } else if (mUsername.contains("\\s")) {
+                } else if (containsWhitespace(mUsername)) {
                     Toast.makeText(v.getContext(), "Username cannot contain whitespace!"
                             , Toast.LENGTH_SHORT)
                             .show();
@@ -117,12 +119,12 @@ public class LoginFragment extends Fragment {
                     Toast.makeText(v.getContext(), "Username cannot be more than 32 characters in length!"
                             , Toast.LENGTH_SHORT)
                             .show();
-                } else if (TextUtils.isEmpty(mPassword)) {
+                } else if (mPassword.equals("")) {
                     Toast.makeText(v.getContext(), "Enter a Password!"
                             , Toast.LENGTH_SHORT)
                             .show();
                     fieldPassword.requestFocus();
-                } else if (mPassword.contains("\\s")) {
+                } else if (containsWhitespace(mPassword)) {
                     Toast.makeText(v.getContext(), "Password cannot contain whitespace!"
                             , Toast.LENGTH_SHORT)
                             .show();
@@ -146,6 +148,20 @@ public class LoginFragment extends Fragment {
         });
 
         return view;
+    }
+
+
+    /**
+     * Checks to see if a given String contains whitespace or not.
+     *
+     * @param theString The String to check for whitespace.
+     * @return Returns true if whitespace was found. Otherwise returns false.
+     */
+    public static boolean containsWhitespace(String theString) {
+        for (char cFocus : theString.toCharArray()) {
+            if (Character.isWhitespace(cFocus)) { return true; }
+        }
+        return false;
     }
 
 
