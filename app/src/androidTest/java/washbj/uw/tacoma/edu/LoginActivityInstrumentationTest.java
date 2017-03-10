@@ -26,17 +26,16 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsNot.not;
 
 
 /**
- * Test class for ensuring logins work correctly.
+ * Test class for ensuring logins work correctly with instrumentation.
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
-public class LoginActivityTest {
+public class LoginActivityInstrumentationTest {
     /**
      * A JUnit {@link Rule @Rule} for launching a test copy of LoginActivity.
      */

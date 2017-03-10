@@ -1,11 +1,8 @@
 package washbj.uw.tacoma.edu.the_reader.authentication;
 
-import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,8 +16,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import washbj.uw.tacoma.edu.the_reader.R;
 
@@ -30,6 +28,26 @@ public class NewUserActivity extends AppCompatActivity {
 
     /** A URL for adding new users. */
     private static final String ADD_USER_URL = "http://cssgate.insttech.washington.edu/~_450bteam5/addUser.php?";
+
+    /** Indicates user has not inputed a username*/
+    public static final int USER_NO_USERNAME = 0;
+
+    /** Indicates username has whitespace*/
+    public static final int USER_USERNAME_WHITESPACE = 1;
+
+    /** Indicates username is too long*/
+    public static final int USER_USERNAME_TOO_LONG = 2;
+
+    /** Indicates user has not inputed a password*/
+    public static final int USER_NO_PASSWORD = 3;
+
+    /** Indicates password has whitespace*/
+    public static final int USER_PASSWORD_WHITESPACE = 4;
+
+    /** Indicates password has whitespace*/
+    public static final int USER_SUCCESS = 5;
+
+
 
     /** The username for the new user. */
     private String mUsername;
@@ -51,36 +69,36 @@ public class NewUserActivity extends AppCompatActivity {
             public void onClick(View v) {
                 mUsername = fieldUsername.getText().toString();
                 mPassword = fieldPassword.getText().toString();
-
+                int userValidation = validateUser(mUsername, mPassword);
                 // Test entered data across all spectrums.
-                if (TextUtils.isEmpty(mUsername)) {
+                if (userValidation == USER_NO_USERNAME) {
                     Toast.makeText(v.getContext(), "Enter a Username!"
                             , Toast.LENGTH_SHORT)
                             .show();
                     fieldUsername.requestFocus();
                     return;
-                } else if (mUsername.contains("\\s")) {
+                } else if (userValidation == USER_USERNAME_WHITESPACE) {
                     Toast.makeText(v.getContext(), "Username cannot contain whitespace!"
                             , Toast.LENGTH_SHORT)
                             .show();
                     return;
-                } else if (mUsername.length() > 32) {
+                } else if (userValidation == USER_USERNAME_TOO_LONG) {
                     Toast.makeText(v.getContext(), "Username cannot be more than 32 characters in length!"
                             , Toast.LENGTH_SHORT)
                             .show();
                     return;
-                } else if (TextUtils.isEmpty(mPassword)) {
+                } else if (userValidation == USER_NO_PASSWORD) {
                     Toast.makeText(v.getContext(), "Enter a Password!"
                             , Toast.LENGTH_SHORT)
                             .show();
                     fieldPassword.requestFocus();
                     return;
-                } else if (mPassword.contains("\\s")) {
+                } else if (userValidation == USER_PASSWORD_WHITESPACE) {
                     Toast.makeText(v.getContext(), "Password cannot contain whitespace!"
                             , Toast.LENGTH_SHORT)
                             .show();
                     return;
-                } else {
+                } else if (userValidation == USER_SUCCESS){
                     VerifyUserIsUniqueTask task = new VerifyUserIsUniqueTask();
                     task.execute(new String[]{USERS_URL});
 
@@ -89,6 +107,26 @@ public class NewUserActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    public static int validateUser(String username, String password) {
+        //Look for whitespace
+        Pattern pattern = Pattern.compile("\\s");
+        Matcher userMatcher = pattern.matcher(username);
+        Matcher passwordMatcher = pattern.matcher(password);
+        if (username.equals("")) {
+            return USER_NO_USERNAME;
+        } else if (userMatcher.find()) {
+            return USER_USERNAME_WHITESPACE;
+        } else if (username.length() > 32) {
+            return USER_USERNAME_TOO_LONG;
+        } else if (password.equals("")) {
+            return USER_NO_PASSWORD;
+        } else if (passwordMatcher.find()) {
+            return USER_PASSWORD_WHITESPACE;
+        } else {
+            return USER_SUCCESS;
+        }
     }
 
 
