@@ -60,10 +60,10 @@ public class NewUserActivityTest {
     }
 
     /**
-     * Tests for leaving out a username
+     * Tests a succesful login
      */
     @Test
-    public void testvalidateSuccesfulUsername() {
+    public void testvalidateSuccesful() {
         assertEquals("Username test succesful", NewUserActivity.USER_SUCCESS,
                 NewUserActivity.validateUser("prettyokayusername", "prettyokaypassword"));
     }
