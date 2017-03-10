@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -20,26 +20,62 @@ import android.widget.Toast;
 
 import washbj.uw.tacoma.edu.the_reader.R;
 
+/**
+ * Displays various settings for some book. Lets the user edit its title,
+ * cover image, background appearance, text size, and font.
+ */
 public class SettingsActivity extends AppCompatActivity {
     int mPosition;
 
+    /**
+     * SharedPreferences for storing technical information on the given book,
+     * including its title and paths.
+     */
     private SharedPreferences mShelfSharedPreferences;
+
+    /**
+     * SharedPreferences for storing visual information on the given book, including
+     * its background, text size, and font.
+     */
     private SharedPreferences mVisualSharedPreferences;
 
+    /** EditText for changing the book's title. */
     EditText mEditTitle;
 
+    /** Press this to pick an image file for the book's cover. */
     ImageButton mEditCover;
+
+    /** The path to the cover image. */
     String mImagePath;
 
+    /** Press this to save the changes. */
     Button mButtonSave;
-    Button mButtonDiscard;
 
+    /** A TextView for displaying some example text, so the user can see their selected text size and font. */
     TextView mTestText;
+
+    /** A Spinner for selecting the font size. */
     Spinner mSpinnerFontSize;
+
+    /** A Spinner for selecting the typeface. */
     Spinner mSpinnerTypeface;
 
+    /**
+     * The font-size of the text. Not the actual size. Rather, should be used to select a size from ReadActivity's
+     * TEXT_SIZES array.
+     */
     int mTextFontSize;
+
+    /**
+     * The typeface of the text. Not the actual typeface. Rather, should be used to select a typeface
+     * from ReadActivity's TYPEFACES array.
+     */
     int mTextTypeface;
+
+    /**
+     * The background of the book. Like above, it isn't the actual background, but should be used to
+     * select an entry in ReadActivity's BACKGROUNDS array.
+     */
     int mBackground;
 
     @Override
@@ -59,6 +95,7 @@ public class SettingsActivity extends AppCompatActivity {
         mImagePath = mShelfSharedPreferences.getString(getString(R.string.BOOK_TAG) + mPosition + "_imagepath", "NO_IMAGE_PATH");
         if (!mImagePath.equals("NO_IMAGE_PATH")) { mEditCover.setImageURI(Uri.parse(mImagePath)); }
 
+        // Open a file picker to pick a cover image.
         mEditCover.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,6 +105,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
+        // Save changes and close the Settings Activity.
         mButtonSave = (Button) findViewById(R.id.button_save_changes);
         mButtonSave.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -84,6 +122,7 @@ public class SettingsActivity extends AppCompatActivity {
         final FrameLayout layout = (FrameLayout) findViewById(R.id.activity_settings);
         layout.setBackgroundResource(ReadActivity.BACKGROUNDS[mBackground]);
 
+        // Spinner for selecting the font size.
         mSpinnerFontSize = (Spinner) findViewById(R.id.spinner_font_size);
         mSpinnerFontSize.setAdapter(ArrayAdapter.createFromResource(this, R.array.spinarray_fontsize,
                                     R.layout.spinner_item));
@@ -104,6 +143,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
 
+        // Spinner for selecting the typeface.
         mSpinnerTypeface = (Spinner) findViewById(R.id.spinner_typeface);
         mSpinnerTypeface.setAdapter(ArrayAdapter.createFromResource(this, R.array.spinarray_typeface,
                 R.layout.spinner_item));
@@ -123,6 +163,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         });
 
+
+        // Spinner for selecting the background.
         mSpinnerTypeface = (Spinner) findViewById(R.id.spinner_background);
         mSpinnerTypeface.setAdapter(ArrayAdapter.createFromResource(this, R.array.spinarray_background,
                 R.layout.spinner_item));
@@ -145,12 +187,18 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Update's the example text when the user selects a new size or font.
+     */
     private void updateText() {
         mTestText.setTextSize(ReadActivity.TEXT_SIZES[mTextFontSize]);
         mTestText.setTypeface(ReadActivity.TYPEFACES[mTextTypeface]);
     }
 
 
+    /**
+     * Updates the SharedPreferences with all the selected settings.
+     */
     private void updateSettings() {
         SharedPreferences.Editor spEditor = mShelfSharedPreferences.edit();
         spEditor.putString(getString(R.string.BOOK_TAG) + mPosition + "_title", mEditTitle.getText().toString());
@@ -168,6 +216,11 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Gets the URI for the selected image, if the user happened to be picking files.
+     *
+     * {@inheritDoc}
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         String fullPath = "";

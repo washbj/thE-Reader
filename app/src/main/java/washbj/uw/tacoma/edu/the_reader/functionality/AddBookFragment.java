@@ -9,6 +9,7 @@
 package washbj.uw.tacoma.edu.the_reader.functionality;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -20,7 +21,9 @@ import android.widget.Button;
 import washbj.uw.tacoma.edu.the_reader.R;
 
 /**
- * Fragment to add a book
+ * A simple Fragment to be displayed at the end of the Shelf's
+ * list of pages. All it really does is let the user call Shelf's
+ * selectFile() method, so they can add new books to the system.
  */
 public class AddBookFragment extends Fragment {
     /**
@@ -29,9 +32,9 @@ public class AddBookFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     /**
-     * Button for adding a book
+     * Press this to add a new book.
      */
-    private Button mButton;
+    private Button mAddBookButton;
 
     public AddBookFragment() {
         // Required empty public constructor
@@ -59,8 +62,8 @@ public class AddBookFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_add_book, container, false);
 
-        mButton = (Button) view.findViewById(R.id.button_add_book);
-        mButton.setOnClickListener(new View.OnClickListener() {
+        mAddBookButton = (Button) view.findViewById(R.id.button_add_book);
+        mAddBookButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 ((ShelfActivity) getActivity()).selectFile();
             }

@@ -8,18 +8,16 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import washbj.uw.tacoma.edu.the_reader.R;
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ViewPageFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ViewPageFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Displays one page of some book's text for the parent Read Activity's ViewPager.
+ * Formats the text appropriately based on the settings selected for the containing
+ * book, including text size, typeface, and background.
+ *
+ * Also shows the page number.
  */
 public class ViewPageFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
@@ -66,11 +64,14 @@ public class ViewPageFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_view_page, container, false);
 
+        // Default values for necessary variables, to avoid problems
+        // if it turns out there isn't a bundle to pull them from.
         mText = "ERROR: NO BUNDLE FOUND";
         mTextSize = 16.0f;
         mTypeface = Typeface.MONOSPACE;
         int iPageNumber = 0;
 
+        // Get the bundle and use it to set variables.
         Bundle bundle = this.getArguments();
         if (bundle != null) {
             mText = bundle.getString("text", "Loading...");
@@ -93,11 +94,6 @@ public class ViewPageFragment extends Fragment {
 
     }
 
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
 
     @Override
     public void onAttach(Context context) {
@@ -109,6 +105,7 @@ public class ViewPageFragment extends Fragment {
                     + " must implement OnFragmentInteractionListener");
         }
     }
+
 
     @Override
     public void onDetach() {

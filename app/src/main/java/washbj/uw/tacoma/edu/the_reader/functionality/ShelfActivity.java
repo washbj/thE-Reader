@@ -1,11 +1,3 @@
-/*
- * Justin Washburn and Michael Scott
- *  TCSS 450
- *  Swellest Reader version 1
- *
- *
- */
-
 package washbj.uw.tacoma.edu.the_reader.functionality;
 
 import android.Manifest;
@@ -44,30 +36,34 @@ import washbj.uw.tacoma.edu.the_reader.authentication.LoginActivity;
 import static android.icu.util.ULocale.getName;
 
 /**
- * The main activity to view the book's text. Also has a menu bar to log out
- * and open books.
+ * The "hub" Activity of the app. Here is where the user can scroll through
+ * all the books on their shelf, as well as add new books and edit the settings
+ * of existing books. A drop-down menu is also provided, so the user can clear
+ * their shelf of all books or log out.
+ *
+ * Or both! O_O
  */
 public class ShelfActivity extends AppCompatActivity
         implements  ViewBookFragment.OnFragmentInteractionListener,
                     AddBookFragment.OnFragmentInteractionListener {
 
     /**
-     * The int to represent a file has been picked
+     * The int to represent that a file has been picked.
      */
     public static int FILE_PICKED_RESULT = 342;
 
     /**
-     * The int to represent a file has been picked
+     * The int to represent that settings have been updated.
      */
     public static int SETTINGS_UPDATED_RESULT = 731;
 
     /**
-     * The int to represent a request on external storage
+     * The int to represent a request on external storage.
      */
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static final int REQUEST_EXTERNAL_STORAGE = 499;
 
     /**
-     * The url of the book add php code
+     * The base url for adding book info to the external database.
      */
     private static final String ADD_BOOK_URL ="http://cssgate.insttech.washington.edu/~_450bteam5/addBook.php?";
 
@@ -83,7 +79,8 @@ public class ShelfActivity extends AppCompatActivity
     private PagerAdapter mPagerAdapter;
 
     /**
-     * Shared preferences for the shelf books
+     * SharedPreferences for keeping track of Shelf-related things, including
+     * information about all the books on it. Stores paths and names mostly.
      */
     private SharedPreferences mShelfSharedPreferences;
 
@@ -176,8 +173,9 @@ public class ShelfActivity extends AppCompatActivity
 
     }
 
+
     /**
-     * Selects a file and starts the file choser activity
+     * Launches the intent that starts the file selection process.
      */
     public void selectFile() {
         Intent fileIntent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -203,16 +201,18 @@ public class ShelfActivity extends AppCompatActivity
         }
     }
 
+
     /**
-     * Updates to a new page on the bookshelf
+     * Updates the ViewPager system when the data has been changed in some way.
      */
     public void updatePageView() {
         mPagerAdapter.notifyDataSetChanged();
         mPager.setAdapter(mPagerAdapter);
     }
 
+
     /**
-     * Opens the settings view
+     * Launches the Settings activity.
      */
     public void openSettings() {
         Intent intentSettings = new Intent(this, SettingsActivity.class);
@@ -220,8 +220,10 @@ public class ShelfActivity extends AppCompatActivity
         startActivityForResult(intentSettings, ShelfActivity.SETTINGS_UPDATED_RESULT);
     }
 
+
     /**
-     * Holds all of the book fragments on the shelf
+     * An altered Pager Adapter for displaying all the books on this Shelf,
+     * as well as a separate Add Book Fragment.
      */
     private class BookPagerAdapter extends FragmentStatePagerAdapter {
         public BookPagerAdapter(FragmentManager fm) {
@@ -263,11 +265,14 @@ public class ShelfActivity extends AppCompatActivity
 
     }
 
+
     /**
-     * Gets the file path from the file
-     * @param requestCode Type of request
-     * @param resultCode Whether attempt was succesful
-     * @param data the file data
+     * Watches for if the user opens a file picker or launches the Settings activity.
+     * For file pickers, the process of loading in and saving a book to the Shelf is
+     * started. For Settings, recreate the activity, as whatever the user did in it
+     * likely resulted in changing the appearance of the Shelf in some way.
+     *
+     * {@inheritDoc}
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -321,8 +326,9 @@ public class ShelfActivity extends AppCompatActivity
 
     }
 
+
     /**
-     * Clears the bookshel of all books
+     * Clears the shelf of all its books.
      */
     private void clearShelf() {
         SharedPreferences.Editor spEditor = mShelfSharedPreferences.edit();
@@ -343,10 +349,15 @@ public class ShelfActivity extends AppCompatActivity
 
     }
 
+
     /**
-     * Adds a book to the bookshelf
-     * @param theName name of the book
-     * @param theLocation file location of book
+     * Adds information about a book to the Shared Preferences database, including
+     * its title, filename, location, and image path. Actual images and files are
+     * not added, only paths to them. Accessing the files themselves is left up to
+     * the other elements of the app.
+     *
+     * @param theName The filename of the book text file.
+     * @param theLocation The path to the book text file.
      */
     private void addBook(String theName, String theLocation) {
         int iPosition = mShelfSharedPreferences.getInt(getString(R.string.BOOK_SHELF_COUNT), 0);
@@ -434,14 +445,7 @@ public class ShelfActivity extends AppCompatActivity
         return null;
     }
 
-    /**
-     * Gets file info to ultimately get the file name
-     * @param context current context
-     * @param uri file uri
-     * @param selection selection for cursor
-     * @param selectionArgs arguments to search the uri for
-     * @return the file name
-     */
+
     public static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
         Cursor cursor = null;
         final String column = "_data";

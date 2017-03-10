@@ -3,7 +3,6 @@ package washbj.uw.tacoma.edu.the_reader.functionality;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -17,27 +16,39 @@ import android.widget.TextView;
 import washbj.uw.tacoma.edu.the_reader.R;
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ViewBookFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ViewBookFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Displays opening information about some book within the parent Shelf Activity's ViewPager,
+ * including the title and cover image (if there is one). Also provides buttons for opening
+ * said book, or opening the related Settings Activity.
  */
 public class ViewBookFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
+    /**
+     * The Shelf SharedPreferences. Here is stored the technical information on
+     * this particular book, including its paths and title.
+     */
     private SharedPreferences mShelfSharedPreferences;
 
+    /**
+     * This book's position in Shelf Activity's list of books.
+     * Important so it knows which entries to access in the
+     * SharedPreferences database.
+     */
     int mPosition;
 
+    /** The title of the book. */
     TextView mTitle;
 
+    /** The cover image of the book. */
     ImageView mImage;
+
+    /** The path to the cover image. */
     String mImagePath;
 
+    /** Clicking this will open the book in the Read Activity. */
     Button mButtonOpen;
 
+    /** Clicking this will open the Settings Activity for the book. */
     Button mButtonSettings;
 
     public ViewBookFragment() {
@@ -75,13 +86,16 @@ public class ViewBookFragment extends Fragment {
         if (bundle != null) { mPosition = bundle.getInt("position"); }
         else { mPosition = 0; }
 
+        // Gets the title of the book.
         mTitle = (TextView) view.findViewById(R.id.book_title);
         mTitle.setText(mShelfSharedPreferences.getString(getString(R.string.BOOK_TAG) + mPosition + "_title", "(No Title)"));
 
+        // Gets the cover image from the provided path, if there is one, and displays it for the user.
         mImage = (ImageView) view.findViewById(R.id.book_cover);
         mImagePath = mShelfSharedPreferences.getString(getString(R.string.BOOK_TAG) + mPosition + "_imagepath", "NO_IMAGE_PATH");
         if (!mImagePath.equals("NO_IMAGE_PATH")) { mImage.setImageURI(Uri.parse(mImagePath)); }
 
+        // Opens the displayed book by launching its Read Activity.
         mButtonOpen = (Button) view.findViewById(R.id.button_open_book);
         mButtonOpen.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -91,6 +105,7 @@ public class ViewBookFragment extends Fragment {
             }
         });
 
+        // Opens the book's Settings Activity.
         mButtonSettings = (Button) view.findViewById(R.id.button_settings);
         mButtonSettings.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
