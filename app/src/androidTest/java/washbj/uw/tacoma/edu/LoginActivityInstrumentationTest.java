@@ -1,5 +1,9 @@
 package washbj.uw.tacoma.edu;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
@@ -23,12 +27,11 @@ import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.core.IsNot.not;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Test class for ensuring logins work correctly with instrumentation.
@@ -40,17 +43,23 @@ public class LoginActivityInstrumentationTest {
      * A JUnit {@link Rule @Rule} for launching a test copy of LoginActivity.
      */
     @Rule
-    public ActivityTestRule<LoginActivity> mActivityRule = new ActivityTestRule<>(LoginActivity.class);
+    public ActivityTestRule<LoginActivity> mActivityRule = new ActivityTestRule<LoginActivity>(LoginActivity.class);
 
 
     /**
      * Ensure we're logged out before proceeding with this test.
      */
     @Before
-    public void logout() {
-        openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getTargetContext());
-        onView(withContentDescription("Log Out"))
-                .perform(click());
+    public void setup() {
+        Activity activity = mActivityRule.getActivity();
+        SharedPreferences sp = activity.getSharedPreferences(activity.getString(R.string.LOGIN_PREFS),
+                                                                Context.MODE_PRIVATE);
+
+        if (sp.getBoolean("loggedin", false)) {
+            openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getTargetContext());
+            onView(withText("Log Out")).perform(click());
+
+        }
 
     }
 
